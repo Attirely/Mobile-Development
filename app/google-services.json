@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "983639439524",
+    "project_id": "attirely-95695",
+    "storage_bucket": "attirely-95695.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983639439524:android:989d2e6a969f3a5ff7ce31",
+        "android_client_info": {
+          "package_name": "com.capstone.attirely"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEGp2T0_TsGSG4TWlb-Mla54Gwhg1JrWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

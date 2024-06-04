@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Attirely</string>
+    <string name="signIn">Sign In With Google</string>
+    <string name="tagLine">Explore About Outfit</string>
+    <string name="login">Login</string>
+    <string name="carosel1">Organize your wardrobe effortlessly and keep track of all your favorite pieces.</string>
+    <string name="carosel2">Create new looks by mixing and matching your clothes.</string>
+    <string name="carosel3">Stay trendy and confident with outfits curated from the clothes you already own.</string>
+    <string name="all">All</string>
+    <string name="newest">Newest</string>
+    <string name="username">M Ayash</string>
+    <string name="email">m.ayashal.f@gmail.com</string>
+    <string name="favorite">Favorite</string>
+    <string name="clothes">clothes</string>
+    <string name="profile">Profile</string>
+    <string name="search">Search...</string>
+    <string name="add">Add Your Outfit</string>
+    <string name="outfit_name">Outfit name...</string>
+    <string name="analyze">Analyze % outfit</string>
+    <string name="analyzing">Analyzing your outfit...</string>
+    <string name="category">Category</string>
+    <string name="add_outfit">Add % outfit</string>
+    <string name="content">Woman, black shirt with short</string>
+    <string name="outfit">Cardigan biru</string>
+</resources>
