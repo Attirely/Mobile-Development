@@ -64,6 +64,10 @@ dependencies {
     implementation (libs.accompanist.pager.indicators.v0261alpha)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation (libs.androidx.navigation.compose.v253)
+    implementation (libs.androidx.lifecycle.runtime.ktx.v240)
+    implementation (libs.androidx.ui.v130)
+    implementation (libs.androidx.material.v130)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
