@@ -68,9 +68,9 @@ dependencies {
     implementation (libs.androidx.material)
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation (libs.androidx.runtime.livedata)
-    implementation(libs.play.services.auth)
     implementation(platform(libs.firebase.bom))
-    implementation (libs.androidx.ui.text.google.fonts)
+    implementation("com.google.android.gms:play-services-auth:20.6.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

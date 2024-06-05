@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "983639439524",
-    "project_id": "attirely-95695",
-    "storage_bucket": "attirely-95695.appspot.com"
+    "project_number": "473134585510",
+    "project_id": "attirely-368d9",
+    "storage_bucket": "attirely-368d9.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:983639439524:android:989d2e6a969f3a5ff7ce31",
+        "mobilesdk_app_id": "1:473134585510:android:6cfefb06f3455ccbd44667",
         "android_client_info": {
           "package_name": "com.capstone.attirely"
         }
       },
       "oauth_client": [
         {
-          "client_id": "983639439524-2bvifd3pulk8cc2spnd3nk3t02n48ng3.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.capstone.attirely",
-            "certificate_hash": "3d4db635fc392956ab6740916c6bfb332b8c02fa"
-          }
-        },
-        {
-          "client_id": "983639439524-nqmfmge60oqcll5ne9srp94c4veb3h0k.apps.googleusercontent.com",
+          "client_id": "473134585510-55rvvm9d72o7p4rbn28harpd8s7rhh0d.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAEGp2T0_TsGSG4TWlb-Mla54Gwhg1JrWQ"
+          "current_key": "AIzaSyDnx09hl5JDSYtBEctlcT2tzL93H2mO2gc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "983639439524-nqmfmge60oqcll5ne9srp94c4veb3h0k.apps.googleusercontent.com",
+              "client_id": "473134585510-55rvvm9d72o7p4rbn28harpd8s7rhh0d.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
