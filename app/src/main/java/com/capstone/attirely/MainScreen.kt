@@ -16,7 +16,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -114,19 +113,6 @@ sealed class NavItem(val route: String, val icon: ImageVector, val title: String
     object Search : NavItem("search", Icons.Filled.Search, "Search")
     object Profile : NavItem("profile", Icons.Filled.Person, "Profile")
 }
-
-@Composable
-fun HomeScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Home Screen")
-    }
-}
-
 @Composable
 fun SearchScreen() {
     Box(
@@ -141,7 +127,12 @@ fun SearchScreen() {
 
 @Composable
 fun ProfileScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.White),
+        contentAlignment = Alignment.Center
+    ) {
         Text(text = "Profile Screen")
     }
 }

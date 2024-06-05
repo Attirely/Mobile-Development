@@ -12,7 +12,20 @@
           "package_name": "com.capstone.attirely"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "983639439524-2bvifd3pulk8cc2spnd3nk3t02n48ng3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.capstone.attirely",
+            "certificate_hash": "3d4db635fc392956ab6740916c6bfb332b8c02fa"
+          }
+        },
+        {
+          "client_id": "983639439524-nqmfmge60oqcll5ne9srp94c4veb3h0k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAEGp2T0_TsGSG4TWlb-Mla54Gwhg1JrWQ"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "983639439524-nqmfmge60oqcll5ne9srp94c4veb3h0k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

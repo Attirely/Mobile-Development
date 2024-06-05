@@ -1,10 +1,12 @@
 package com.capstone.attirely
 
-import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,13 +24,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,22 +40,64 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.capstone.attirely.ui.theme.AttirelyTheme
+import com.capstone.attirely.viewmodel.LoginViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import kotlinx.coroutines.launch
+
 
 class MainActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    private val loginViewModel: LoginViewModel by viewModels()
+    private val signInRequestCode = 1001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AttirelyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    WelcomePage()
+                val context = LocalContext.current
+                val loginResult = loginViewModel.loginResult.observeAsState()
+
+                loginResult.value?.let { result ->
+                    result.onSuccess { account ->
+                        Log.d(
+                            "SignInSuccess",
+                            "Email: ${account.email}, DisplayName: ${account.displayName}"
+                        )
+                        lifecycleScope.launch {
+                            navigateToMainScreen()
+                        }
+                    }
+                    result.onFailure { e ->
+                        Log.e("SignInError", "Error: ${e.message}")
+                    }
                 }
+
+                WelcomePage(onGoogleSignInClick = {
+                    val signInIntent = loginViewModel.getSignInClient().signInIntent
+                    startActivityForResult(signInIntent, signInRequestCode)
+                })
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == signInRequestCode) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            loginViewModel.handleSignInResult(task)
+        }
+    }
+
+    private fun navigateToMainScreen() {
+        setContent {
+            AttirelyTheme {
+                MainScreen()
             }
         }
     }
@@ -60,7 +105,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun WelcomePage() {
+fun WelcomePage(onGoogleSignInClick: () -> Unit) {
     val images = listOf(
         R.drawable.carousel1,
         R.drawable.carousel2,
@@ -135,7 +180,7 @@ fun WelcomePage() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { onGoogleSignInClick() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp),
@@ -180,6 +225,8 @@ fun WelcomePage() {
 @Composable
 fun PreviewWelcomePage() {
     AttirelyTheme {
-        WelcomePage()
+        WelcomePage(
+            onGoogleSignInClick = {}
+        )
     }
 }
