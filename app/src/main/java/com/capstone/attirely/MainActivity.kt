@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -36,50 +37,62 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import kotlinx.coroutines.launch
 
 
+
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
-    private val signInRequestCode = 1001
+
+    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            try {
+                val credential = Identity.getSignInClient(this).getSignInCredentialFromIntent(result.data)
+                loginViewModel.handleSignInResult(credential)
+            } catch (e: Exception) {
+                Log.e("SignInError", "Error getting SignInCredential: ${e.message}")
+            }
+        } else {
+            Log.e("SignInError", "Sign-in failed with result code: ${result.resultCode}")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             AttirelyTheme {
-                val context = LocalContext.current
                 val loginResult = loginViewModel.loginResult.observeAsState()
+                val signInResult = loginViewModel.signInResult.observeAsState()
+
+                signInResult.value?.let { result ->
+                    result.onSuccess { beginSignInResult ->
+                        val intentSenderRequest = IntentSenderRequest.Builder(beginSignInResult.pendingIntent.intentSender).build()
+                        signInLauncher.launch(intentSenderRequest)
+                    }
+                    result.onFailure { e ->
+                        Log.e("SignInError", "Error starting sign-in: ${e.message}")
+                    }
+                }
 
                 loginResult.value?.let { result ->
-                    result.onSuccess { account ->
-                        Log.d(
-                            "SignInSuccess",
-                            "Email: ${account.email}, DisplayName: ${account.displayName}"
-                        )
+                    result.onSuccess { credential ->
+                        val account = credential.googleIdToken
+                        Log.d("SignInSuccess", "ID Token: $account")
                         lifecycleScope.launch {
                             navigateToMainScreen()
                         }
                     }
                     result.onFailure { e ->
-                        Log.e("SignInError", "Error: ${e.message}")
+                        Log.e("SignInError", "Error during Firebase sign-in: ${e.message}")
                     }
                 }
 
                 WelcomePage(onGoogleSignInClick = {
-                    val signInIntent = loginViewModel.getSignInClient().signInIntent
-                    startActivityForResult(signInIntent, signInRequestCode)
+                    loginViewModel.beginSignIn()
                 })
             }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == signInRequestCode) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            loginViewModel.handleSignInResult(task)
         }
     }
 
