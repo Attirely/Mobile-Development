@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.capstone.attirely.ui.theme.AttirelyTheme
 import com.capstone.attirely.viewmodel.LoginViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -42,68 +46,64 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import kotlinx.coroutines.launch
 
 
-
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
-
-    private val signInLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            try {
-                val credential = Identity.getSignInClient(this).getSignInCredentialFromIntent(result.data)
-                loginViewModel.handleSignInResult(credential)
-            } catch (e: Exception) {
-                Log.e("SignInError", "Error getting SignInCredential: ${e.message}")
-            }
-        } else {
-            Log.e("SignInError", "Sign-in failed with result code: ${result.resultCode}")
-        }
-    }
+    private val signInRequestCode = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             AttirelyTheme {
-                val loginResult = loginViewModel.loginResult.observeAsState()
-                val signInResult = loginViewModel.signInResult.observeAsState()
+                val navController = rememberNavController()
+                val loginResult by loginViewModel.loginResult.observeAsState()
+                val firebaseAuthResult by loginViewModel.firebaseAuthResult.observeAsState()
 
-                signInResult.value?.let { result ->
-                    result.onSuccess { beginSignInResult ->
-                        val intentSenderRequest = IntentSenderRequest.Builder(beginSignInResult.pendingIntent.intentSender).build()
-                        signInLauncher.launch(intentSenderRequest)
+                NavHost(navController = navController, startDestination = "welcome") {
+                    composable("welcome") {
+                        WelcomePage(onGoogleSignInClick = {
+                            val signInIntent = loginViewModel.getSignInClient().signInIntent
+                            startActivityForResult(signInIntent, signInRequestCode)
+                        })
                     }
-                    result.onFailure { e ->
-                        Log.e("SignInError", "Error starting sign-in: ${e.message}")
+                    composable("main") {
+                        MainScreen()
                     }
                 }
 
-                loginResult.value?.let { result ->
-                    result.onSuccess { credential ->
-                        val account = credential.googleIdToken
-                        Log.d("SignInSuccess", "ID Token: $account")
-                        lifecycleScope.launch {
-                            navigateToMainScreen()
+                loginResult?.let { result ->
+                    result.onSuccess { account ->
+                        Log.d("SignInSuccess", "Email: ${account.email}, DisplayName: ${account.displayName}")
+                    }
+                    result.onFailure { e ->
+                        Log.e("SignInError", "Error: ${e.message}")
+                    }
+                }
+
+                firebaseAuthResult?.let { result ->
+                    result.onSuccess { user ->
+                        Log.d("FirebaseAuthSuccess", "User: ${user.email}, DisplayName: ${user.displayName}")
+                        navController.navigate("main") {
+                            popUpTo("welcome") { inclusive = true }
                         }
                     }
                     result.onFailure { e ->
-                        Log.e("SignInError", "Error during Firebase sign-in: ${e.message}")
+                        Log.e("FirebaseAuthError", "Error: ${e.message}")
                     }
                 }
-
-                WelcomePage(onGoogleSignInClick = {
-                    loginViewModel.beginSignIn()
-                })
             }
         }
     }
 
-    private fun navigateToMainScreen() {
-        setContent {
-            AttirelyTheme {
-                MainScreen()
-            }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == signInRequestCode) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            loginViewModel.handleSignInResult(task)
         }
     }
 }
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
