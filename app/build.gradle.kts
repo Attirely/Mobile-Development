@@ -69,7 +69,8 @@ dependencies {
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation (libs.androidx.runtime.livedata)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.play.services.auth.v2060)
+    implementation(libs.play.services.auth)
+    implementation(libs.onetapcompose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
