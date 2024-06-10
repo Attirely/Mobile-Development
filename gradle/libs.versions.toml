@@ -5,6 +5,8 @@ accompanistPagerIndicatorsVersion = "0.26.1-alpha"
 accompanistPagerVersion = "0.26.1-alpha"
 activityComposeVersion = "1.6.1"
 agp = "8.4.1"
+androidxFoundation = "1.2.0"
+coilCompose = "2.1.0"
 firebaseBom = "33.1.0"
 foundation = "1.6.7"
 foundationVersion = "1.4.0-alpha03"
@@ -41,6 +43,7 @@ accompanist-pager-v0261alpha = { module = "com.google.accompanist:accompanist-pa
 androidx-activity-compose-v161 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
+androidx-foundation-v120 = { module = "androidx.compose.foundation:foundation", version.ref = "androidxFoundation" }
 androidx-foundation-v140alpha03 = { module = "androidx.compose.foundation:foundation", version.ref = "foundationVersion" }
 androidx-lifecycle-runtime-ktx-v240 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
@@ -49,6 +52,7 @@ androidx-material-v130 = { module = "androidx.compose.material:material", versio
 androidx-navigation-compose-v253 = { module = "androidx.navigation:navigation-compose", version.ref = "navigationComposeVersion" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-ui-v130 = { module = "androidx.compose.ui:ui", version.ref = "uiVersion" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

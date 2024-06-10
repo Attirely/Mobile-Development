@@ -46,6 +46,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
+import com.google.firebase.FirebaseApp
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
 import com.stevdzasan.onetap.rememberOneTapSignInState
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
         setContent {
             AttirelyTheme {
