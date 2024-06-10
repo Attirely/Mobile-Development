@@ -57,7 +57,7 @@ fun HomeScreen() {
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxSize()
-                    .padding(26.dp),
+                    .padding(top = 26.dp, bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -72,44 +72,45 @@ fun HomeScreen() {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.all),
-                        color = Color.White,
-                        fontSize = 20.sp,
+                    Column(
                         modifier = Modifier
-                            .clickable { selectedTab.value = "all" }
-                    )
+                            .clickable { selectedTab.value = "all" },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.all),
+                            color = Color.White,
+                            fontSize = 20.sp
+                        )
+                        Divider(
+                            color = (if (selectedTab.value == "all") Color.White else Color.Transparent),
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .width(50.dp)
+                                .height(2.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(80.dp))
-                    Text(
-                        text = stringResource(id = R.string.newest),
-                        color = Color.White,
-                        fontSize = 20.sp,
+                    Column(
                         modifier = Modifier
-                            .clickable { selectedTab.value = "newest" }
-                    )
+                            .clickable { selectedTab.value = "newest" },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.newest),
+                            color = Color.White,
+                            fontSize = 20.sp
+                        )
+                        Divider(
+                            color = (if (selectedTab.value == "newest") Color.White else Color.Transparent),
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .width(50.dp)
+                                .height(2.dp)
+                        )
+                    }
                 }
 
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp).align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Divider(
-                    color = (if (selectedTab.value == "all") Color.White else Color.Transparent),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 95.dp, end = 45.dp)
-                        .height(2.dp)
-                )
-                Divider(
-                    color = (if (selectedTab.value == "newest") Color.White else Color.Transparent),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 25.dp, end = 115.dp)
-                        .height(2.dp)
-                )
             }
         }
 
