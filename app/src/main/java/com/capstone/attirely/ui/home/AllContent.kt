@@ -1,3 +1,5 @@
+package com.capstone.attirely.ui.home
+
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -6,16 +8,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +18,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,6 +57,7 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     rowContent.forEach { content ->
+                        var isFavorite by remember { mutableStateOf(false) }
                         Card(
                             modifier = Modifier
                                 .width(0.dp)
@@ -102,14 +99,42 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
                                         .align(Alignment.BottomStart)
                                         .padding(16.dp)
                                 ) {
-                                    Text(
-                                        text = content.title,
-                                        modifier = Modifier.align(Alignment.BottomStart),
-                                        color = Color.White,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 2
-                                    )
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.BottomStart),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = content.title,
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 2,
+                                            lineHeight = 16.sp,
+                                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                                        )
+
+                                        IconButton(
+                                            onClick = { isFavorite = !isFavorite },
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .background(
+                                                    Color.White.copy(alpha = 0.4f),
+                                                    shape = RoundedCornerShape(50.dp)
+                                                ).padding(4.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier.size(18.dp),
+                                                painter = painterResource(
+                                                    id = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart
+                                                ),
+                                                contentDescription = null,
+                                                tint = if (isFavorite) colorResource(id = R.color.secondary) else Color.White
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }

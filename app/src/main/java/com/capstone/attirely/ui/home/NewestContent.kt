@@ -7,10 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -25,6 +22,8 @@ import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +32,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.viewmodel.ContentViewModel
 import kotlin.math.absoluteValue
-import kotlin.math.max
 
 @Composable
 fun NewestContent(viewModel: ContentViewModel = viewModel()) {
@@ -63,6 +61,7 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
             ) {
                 itemsIndexed(newestContentList) { index, content ->
                     var cardOffset by remember { mutableStateOf(0f) }
+                    var isFavorite by remember { mutableStateOf(false) }
 
                     val cardModifier = Modifier
                         .width(350.dp)
@@ -73,7 +72,11 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
                         }
                         .graphicsLayer {
                             val center = screenWidth.toPx() / 2
-                            val scale = 1f - ((center - cardOffset).absoluteValue / center).coerceIn(0f, 0.5f)
+                            val scale =
+                                1f - ((center - cardOffset).absoluteValue / center).coerceIn(
+                                    0f,
+                                    0.5f
+                                )
                             scaleX = 0.8f + 0.2f * scale
                             scaleY = 0.8f + 0.2f * scale
                         }
@@ -114,16 +117,44 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
                                     .fillMaxWidth()
                                     .align(Alignment.BottomStart)
                             ) {
-                                Text(
-                                    text = content.title,
+                                Row(
                                     modifier = Modifier
+                                        .fillMaxWidth()
                                         .align(Alignment.BottomStart)
-                                        .padding(bottom = 30.dp, start = 26.dp, end = 26.dp),
-                                    color = Color.White,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 2
-                                )
+                                        .padding(bottom = 26.dp, start = 26.dp, end = 26.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = content.title,
+                                        color = Color.White,
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 20.dp),
+                                    )
+
+                                    IconButton(
+                                        onClick = { isFavorite = !isFavorite },
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .background(
+                                                Color.White.copy(alpha = 0.4f),
+                                                shape = RoundedCornerShape(50.dp)
+                                            )
+                                    ) {
+                                        Icon(
+                                            modifier = Modifier.size(26.dp),
+                                            painter = painterResource(
+                                                id = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart
+                                            ),
+                                            contentDescription = null,
+                                            tint = if (isFavorite) colorResource(id = R.color.secondary) else Color.White
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
