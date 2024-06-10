@@ -1,14 +1,11 @@
 package com.capstone.attirely.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.capstone.attirely.data.Content
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 
 class ContentViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -26,23 +23,19 @@ class ContentViewModel : ViewModel() {
         if (isLoading) return
         isLoading = true
 
-        val query = db.collection("content")
+        var query = db.collection("content")
             .limit(8)
 
-        val actualQuery = lastDocument?.let {
-            query.startAfter(it)
-        } ?: query
+        lastDocument?.let {
+            query = query.startAfter(it)
+        }
 
-        actualQuery.get()
+        query.get()
             .addOnSuccessListener { result ->
                 val contents = result.map { document ->
                     document.toObject(Content::class.java)
                 }
-                lastDocument = if (result.documents.isNotEmpty()) {
-                    result.documents.last()
-                } else {
-                    null
-                }
+                lastDocument = result.documents.lastOrNull()
 
                 val currentList = _contentList.value.orEmpty().toMutableList()
                 currentList.addAll(contents)

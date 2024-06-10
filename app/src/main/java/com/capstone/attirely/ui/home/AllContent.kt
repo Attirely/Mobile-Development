@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.viewmodel.ContentViewModel
 import kotlinx.coroutines.launch
@@ -102,16 +102,17 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
                 }
             }
         }
+    }
 
-        item {
-            coroutineScope.launch {
-                if (listState.layoutInfo.visibleItemsInfo.isNotEmpty() &&
-                    listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo }
+            .collect { layoutInfo ->
+                if (layoutInfo.visibleItemsInfo.isNotEmpty() &&
+                    layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
                 ) {
                     viewModel.fetchContent()
                 }
             }
-        }
     }
 }
 
