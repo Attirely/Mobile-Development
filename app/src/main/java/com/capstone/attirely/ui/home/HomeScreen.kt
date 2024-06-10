@@ -46,12 +46,11 @@ fun HomeScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(140.dp)
                 .clip(RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
                 .background(color = colorResource(id = R.color.primary))
         ) {
@@ -59,7 +58,7 @@ fun HomeScreen() {
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxSize()
-                    .padding(top = 26.dp, bottom = 10.dp),
+                    .padding(top = 30.dp, bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {

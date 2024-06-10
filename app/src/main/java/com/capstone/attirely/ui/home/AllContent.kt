@@ -53,7 +53,7 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(vertical = 16.dp),
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {

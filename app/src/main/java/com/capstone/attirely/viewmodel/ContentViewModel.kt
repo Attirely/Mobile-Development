@@ -38,9 +38,14 @@ class ContentViewModel : ViewModel() {
                 lastDocument = result.documents.lastOrNull()
 
                 val currentList = _contentList.value.orEmpty().toMutableList()
-                currentList.addAll(contents)
-                _contentList.value = currentList
 
+                contents.forEach { content ->
+                    if (!currentList.contains(content)) {
+                        currentList.add(content)
+                    }
+                }
+
+                _contentList.value = currentList
                 isLoading = false
             }
             .addOnFailureListener {
