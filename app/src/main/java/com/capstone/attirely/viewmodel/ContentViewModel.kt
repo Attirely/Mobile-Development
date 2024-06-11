@@ -4,16 +4,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.capstone.attirely.data.Content
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 
 class ContentViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
-    private val _contentList = MutableLiveData<List<Content>>()
-    val contentList: LiveData<List<Content>> = _contentList
+    private val auth = FirebaseAuth.getInstance()
 
-    private val _newestContentList = MutableLiveData<List<Content>>()
-    val newestContentList: LiveData<List<Content>> = _newestContentList
+    private val _contentList = MutableLiveData<List<Pair<String, Content>>>()
+    val contentList: LiveData<List<Pair<String, Content>>> = _contentList
+
+    private val _newestContentList = MutableLiveData<List<Pair<String, Content>>>()
+    val newestContentList: LiveData<List<Pair<String, Content>>> = _newestContentList
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -21,11 +25,15 @@ class ContentViewModel : ViewModel() {
     private val _isLoadingNewest = MutableLiveData(false)
     val isLoadingNewest: LiveData<Boolean> = _isLoadingNewest
 
+    private val _favorites = MutableLiveData<Set<String>>()
+    val favorites: LiveData<Set<String>> = _favorites
+
     private var lastDocument: DocumentSnapshot? = null
     private var isFetching = false
 
     init {
         fetchContent()
+        fetchFavorites()
     }
 
     fun fetchContent() {
@@ -43,18 +51,13 @@ class ContentViewModel : ViewModel() {
         query.get()
             .addOnSuccessListener { result ->
                 val contents = result.map { document ->
-                    document.toObject(Content::class.java)
+                    document.id to document.toObject(Content::class.java)
                 }.shuffled()
 
                 lastDocument = result.documents.lastOrNull()
 
                 val currentList = _contentList.value.orEmpty().toMutableList()
-
-                contents.forEach { content ->
-                    if (!currentList.contains(content)) {
-                        currentList.add(content)
-                    }
-                }
+                currentList.addAll(contents)
 
                 _contentList.value = currentList
                 _isLoading.value = false
@@ -74,7 +77,7 @@ class ContentViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { result ->
                 val contents = result.map { document ->
-                    document.toObject(Content::class.java)
+                    document.id to document.toObject(Content::class.java)
                 }
                 _newestContentList.value = contents
                 _isLoadingNewest.value = false
@@ -82,5 +85,31 @@ class ContentViewModel : ViewModel() {
             .addOnFailureListener {
                 _isLoadingNewest.value = false
             }
+    }
+
+    fun fetchFavorites() {
+        val user = auth.currentUser ?: return
+        db.collection("users").document(user.uid).collection("favorite")
+            .get()
+            .addOnSuccessListener { result ->
+                val favorites = result.map { it.id }.toSet()
+                _favorites.value = favorites
+            }
+    }
+
+    fun toggleFavorite(contentId: String, content: Content) {
+        val user = auth.currentUser ?: return
+        val favoritesCollection = db.collection("users").document(user.uid).collection("favorite")
+        val docRef = favoritesCollection.document(contentId)
+
+        if (_favorites.value?.contains(contentId) == true) {
+            docRef.delete().addOnSuccessListener {
+                _favorites.value = _favorites.value?.minus(contentId)
+            }
+        } else {
+            docRef.set(content).addOnSuccessListener {
+                _favorites.value = _favorites.value?.plus(contentId)
+            }
+        }
     }
 }

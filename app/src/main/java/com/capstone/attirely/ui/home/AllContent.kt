@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 fun AllContent(viewModel: ContentViewModel = viewModel()) {
     val contentList by viewModel.contentList.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val favorites by viewModel.favorites.observeAsState(emptySet())
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -56,8 +57,8 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    rowContent.forEach { content ->
-                        var isFavorite by remember { mutableStateOf(false) }
+                    rowContent.forEach { (contentId, content) ->
+                        val isFavorite = favorites.contains(contentId)
                         Card(
                             modifier = Modifier
                                 .width(0.dp)
@@ -113,17 +114,20 @@ fun AllContent(viewModel: ContentViewModel = viewModel()) {
                                             fontWeight = FontWeight.Bold,
                                             maxLines = 2,
                                             lineHeight = 16.sp,
-                                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(end = 8.dp)
                                         )
 
                                         IconButton(
-                                            onClick = { isFavorite = !isFavorite },
+                                            onClick = { viewModel.toggleFavorite(contentId, content) },
                                             modifier = Modifier
                                                 .size(28.dp)
                                                 .background(
                                                     Color.White.copy(alpha = 0.4f),
                                                     shape = RoundedCornerShape(50.dp)
-                                                ).padding(4.dp)
+                                                )
+                                                .padding(4.dp)
                                         ) {
                                             Icon(
                                                 modifier = Modifier.size(18.dp),

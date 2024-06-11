@@ -23,7 +23,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,11 +36,13 @@ import kotlin.math.absoluteValue
 fun NewestContent(viewModel: ContentViewModel = viewModel()) {
     val newestContentList by viewModel.newestContentList.observeAsState(emptyList())
     val isLoadingNewest by viewModel.isLoadingNewest.observeAsState(false)
+    val favorites by viewModel.favorites.observeAsState(emptySet())
     val listState = rememberLazyListState()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
     LaunchedEffect(Unit) {
         viewModel.fetchNewestContent()
+        viewModel.fetchFavorites()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -59,9 +60,9 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
                     .padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(newestContentList) { index, content ->
+                itemsIndexed(newestContentList) { index, (contentId, content) ->
                     var cardOffset by remember { mutableStateOf(0f) }
-                    var isFavorite by remember { mutableStateOf(false) }
+                    val isFavorite = favorites.contains(contentId)
 
                     val cardModifier = Modifier
                         .width(350.dp)
@@ -137,7 +138,7 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
                                     )
 
                                     IconButton(
-                                        onClick = { isFavorite = !isFavorite },
+                                        onClick = { viewModel.toggleFavorite(contentId, content) },
                                         modifier = Modifier
                                             .size(40.dp)
                                             .background(

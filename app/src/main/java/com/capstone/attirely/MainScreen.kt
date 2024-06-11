@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.capstone.attirely.ui.home.HomeScreen
+import com.capstone.attirely.ui.profile.ProfileScreen
 import com.capstone.attirely.ui.theme.AttirelyTheme
 
 @Composable
@@ -123,18 +124,6 @@ fun SearchScreen() {
         contentAlignment = Alignment.Center
     ) {
         Text(text = "Search Screen")
-    }
-}
-
-@Composable
-fun ProfileScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Profile Screen")
     }
 }
 
