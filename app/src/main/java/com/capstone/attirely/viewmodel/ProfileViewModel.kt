@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.capstone.attirely.data.Content
+import com.capstone.attirely.data.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObject
 
 class ProfileViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -24,9 +24,23 @@ class ProfileViewModel : ViewModel() {
     private val _isLoadingFavorites = MutableLiveData<Boolean>()
     val isLoadingFavorites: LiveData<Boolean> = _isLoadingFavorites
 
+    private val _user = MutableLiveData<User>()
+    val user: LiveData<User> = _user
+
     init {
+        fetchUserDetails()
         fetchFavorites()
         fetchCloset()
+    }
+
+    private fun fetchUserDetails() {
+        val currentUser = auth.currentUser ?: return
+        val user = User(
+            avatarUrl = currentUser.photoUrl?.toString() ?: "",
+            username = currentUser.displayName ?: "",
+            email = currentUser.email ?: ""
+        )
+        _user.value = user
     }
 
     fun fetchFavorites() {
