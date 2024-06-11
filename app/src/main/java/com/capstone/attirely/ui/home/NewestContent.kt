@@ -151,7 +151,7 @@ fun NewestContent(viewModel: ContentViewModel = viewModel()) {
                                                 id = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart
                                             ),
                                             contentDescription = null,
-                                            tint = if (isFavorite) colorResource(id = R.color.secondary) else Color.White
+                                            tint = if (isFavorite) colorResource(id = R.color.primary) else Color.White
                                         )
                                     }
                                 }
