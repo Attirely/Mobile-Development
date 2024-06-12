@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.capstone.attirely.ui.add.AddScreen
 import com.capstone.attirely.ui.home.HomeScreen
 import com.capstone.attirely.ui.profile.ProfileScreen
 import com.capstone.attirely.ui.theme.AttirelyTheme
@@ -38,12 +39,17 @@ fun MainScreen() {
         ) {
             composable("home") { HomeScreen() }
             composable("search") { SearchScreen() }
-            composable("profile") { ProfileScreen() }
+            composable("profile") { ProfileScreen(navController) }
+            composable("add") { AddScreen(navController) }
         }
-        BottomNavBar(
-            navController = navController,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        if (currentRoute != "add") {
+            BottomNavBar(
+                navController = navController,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
     }
 }
 
@@ -115,6 +121,7 @@ sealed class NavItem(val route: String, val icon: ImageVector, val title: String
     object Search : NavItem("search", Icons.Filled.Search, "Search")
     object Profile : NavItem("profile", Icons.Filled.Person, "Profile")
 }
+
 @Composable
 fun SearchScreen() {
     Box(

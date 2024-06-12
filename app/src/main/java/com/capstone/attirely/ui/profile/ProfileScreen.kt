@@ -11,22 +11,12 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -39,15 +29,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.ui.home.polyFontFamily
 import com.capstone.attirely.viewmodel.ProfileViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel = viewModel()) {
     val selectedTab = remember { mutableStateOf("favorites") }
     var boxHeight by remember { mutableStateOf(if (selectedTab.value == "closet") 250.dp else 140.dp) }
     val animatedBoxHeight by animateDpAsState(
@@ -270,7 +262,9 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         IconButton(
-                            onClick = { /* Handle add button click */ },
+                            onClick = {
+                                navController.navigate("add") // Navigate to AddScreen
+                            },
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
@@ -298,5 +292,5 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
 @Preview
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen()
+    ProfileScreen(navController = rememberNavController())
 }
