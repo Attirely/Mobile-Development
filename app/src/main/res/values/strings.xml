@@ -19,8 +19,13 @@
     <string name="analyze">Analyze % outfit</string>
     <string name="analyzing">Analyzing your outfit...</string>
     <string name="category">Category</string>
-    <string name="add_outfit">Add % outfit</string>
+    <string name="add_outfit">Add d% outfit</string>
     <string name="content">Woman, black shirt with short</string>
     <string name="outfit">Cardigan biru</string>
     <string name="default_web_client_id">358775350563-cll50vefba4eeged3bf8j5en4svb5plq.apps.googleusercontent.com</string>
+    <string name="choose_image">Choose Image Source</string>
+    <string name="gallery">Gallery</string>
+    <string name="camera">Camera</string>
+    <string name="cancel">Cancel</string>
+    <string name="fill_all_fields">Please Fill All Fields</string>
 </resources>
