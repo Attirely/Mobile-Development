@@ -260,7 +260,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = viewModel()) {
                                 placeholder = {
                                     Text(
                                         text = stringResource(id = R.string.search),
-                                        color = colorResource(id = R.color.brown),
+                                        color = colorResource(id = R.color.gray),
                                         fontSize = 16.sp
                                     )
                                 }
