@@ -155,6 +155,7 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                         onClick = {
                             selectedGenderIcon = R.drawable.ic_male
                             showGenderOptions = false
+                            viewModel.updateGenderFilter("male")
                         }
                     ) {
                         Image(
@@ -172,6 +173,7 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                         onClick = {
                             selectedGenderIcon = R.drawable.ic_female
                             showGenderOptions = false
+                            viewModel.updateGenderFilter("female")
                         }
                     ) {
                         Image(

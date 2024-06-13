@@ -9,7 +9,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class SearchViewModel : ViewModel() {
     private val _outfits = MutableStateFlow<List<Outfit>>(emptyList())
@@ -21,19 +20,29 @@ class SearchViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _genderFilter = MutableStateFlow("all")
+    val genderFilter: StateFlow<String> = _genderFilter.asStateFlow()
+
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     init {
-        fetchOutfits()
+        fetchFilteredOutfits("all")
         fetchFavorites()
     }
 
-    private fun fetchOutfits() {
+    private fun fetchFilteredOutfits(gender: String) {
         viewModelScope.launch {
-            val cowokOutfits = RetrofitInstance.api.getCowokOutfits().map { it.toContent() }
-            val cewekOutfits = RetrofitInstance.api.getCewekOutfits().map { it.toContent() }
-            _outfits.value = (cowokOutfits + cewekOutfits).map { it.toOutfit() }
+            val outfits = when (gender) {
+                "male" -> RetrofitInstance.api.getCowokOutfits()
+                "female" -> RetrofitInstance.api.getCewekOutfits()
+                else -> {
+                    val cowokOutfits = RetrofitInstance.api.getCowokOutfits()
+                    val cewekOutfits = RetrofitInstance.api.getCewekOutfits()
+                    cowokOutfits + cewekOutfits
+                }
+            }
+            _outfits.value = outfits
         }
     }
 
@@ -43,7 +52,7 @@ class SearchViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { result ->
                 val favorites = result.map { document ->
-                    document.id // Assuming the document ID is the unique identifier
+                    document["imageUrl"].toString() // Use imageUrl as the unique identifier
                 }.toSet()
                 _favorites.value = favorites
             }
@@ -54,20 +63,26 @@ class SearchViewModel : ViewModel() {
         val favoritesCollection = db.collection("users").document(user.uid).collection("favorite")
         val docRef = favoritesCollection.document(generateDocumentId(outfit.imageurl))
 
-        if (_favorites.value.contains(outfit.filename)) {
+        if (_favorites.value.contains(outfit.imageurl)) { // Use imageurl as unique identifier
             docRef.delete().addOnSuccessListener {
-                _favorites.value = _favorites.value - outfit.filename
+                _favorites.value = _favorites.value - outfit.imageurl
             }
         } else {
             val content = outfit.toContent()
             docRef.set(content).addOnSuccessListener {
-                _favorites.value = _favorites.value + outfit.filename
+                _favorites.value = _favorites.value + outfit.imageurl
             }
         }
     }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun updateGenderFilter(gender: String) {
+        _genderFilter.value = gender
+        fetchFilteredOutfits(gender)
+        fetchFavorites() // Ensure favorites are fetched whenever the gender filter is updated
     }
 
     private fun generateDocumentId(input: String): String {

@@ -51,10 +51,10 @@ fun SearchContent(outfits: List<Outfit>) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 rowOutfits.forEach { outfit ->
-                    var isFavorite by remember { mutableStateOf(favorites.contains(outfit.filename)) }
+                    var isFavorite by remember { mutableStateOf(favorites.contains(outfit.imageurl)) }
 
                     LaunchedEffect(favorites) {
-                        isFavorite = favorites.contains(outfit.filename)
+                        isFavorite = favorites.contains(outfit.imageurl)
                     }
 
                     Card(
