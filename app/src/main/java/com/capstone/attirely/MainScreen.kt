@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.capstone.attirely.ui.add.AddScreen
 import com.capstone.attirely.ui.home.HomeScreen
 import com.capstone.attirely.ui.profile.ProfileScreen
+import com.capstone.attirely.ui.search.SearchScreen
 import com.capstone.attirely.ui.theme.AttirelyTheme
 
 @Composable
@@ -120,18 +121,6 @@ sealed class NavItem(val route: String, val icon: ImageVector, val title: String
     object Home : NavItem("home", Icons.Filled.Home, "Home")
     object Search : NavItem("search", Icons.Filled.Search, "Search")
     object Profile : NavItem("profile", Icons.Filled.Person, "Profile")
-}
-
-@Composable
-fun SearchScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "Search Screen")
-    }
 }
 
 @Preview

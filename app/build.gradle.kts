@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.onetapcompose)
     implementation (libs.coil.compose)
     implementation (libs.androidx.foundation.v120)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.coil.compose.v132)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

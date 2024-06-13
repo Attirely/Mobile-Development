@@ -57,6 +57,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
     LaunchedEffect(selectedTab.value) {
         if (selectedTab.value == "closet") {
             minHeight = 250.dp
+            minHeight = 250.dp
             maxHeight = 380.dp
             boxHeight = 250.dp
         } else {
@@ -257,8 +258,6 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                                     )
                                 }
                             )
-
-
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         IconButton(
