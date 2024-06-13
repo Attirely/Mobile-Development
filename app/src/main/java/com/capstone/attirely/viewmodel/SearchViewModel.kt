@@ -25,6 +25,7 @@ class SearchViewModel : ViewModel() {
 
     init {
         fetchOutfits()
+        fetchFavorites()
     }
 
     private fun fetchOutfits() {
@@ -35,10 +36,22 @@ class SearchViewModel : ViewModel() {
         }
     }
 
+    fun fetchFavorites() {
+        val user = auth.currentUser ?: return
+        db.collection("users").document(user.uid).collection("favorite")
+            .get()
+            .addOnSuccessListener { result ->
+                val favorites = result.map { document ->
+                    document.id // Assuming the document ID is the unique identifier
+                }.toSet()
+                _favorites.value = favorites
+            }
+    }
+
     fun toggleFavorite(outfit: Outfit) {
         val user = auth.currentUser ?: return
         val favoritesCollection = db.collection("users").document(user.uid).collection("favorite")
-        val docRef = favoritesCollection.document(UUID.randomUUID().toString())
+        val docRef = favoritesCollection.document(generateDocumentId(outfit.imageurl))
 
         if (_favorites.value.contains(outfit.filename)) {
             docRef.delete().addOnSuccessListener {
@@ -51,6 +64,10 @@ class SearchViewModel : ViewModel() {
             }
         }
     }
+
+    private fun generateDocumentId(input: String): String {
+        return input.hashCode().toString() // Generate a valid document ID
+    }
 }
 
 fun Outfit.toContent(): Content {
@@ -62,7 +79,7 @@ fun Outfit.toContent(): Content {
 
 fun Content.toOutfit(): Outfit {
     return Outfit(
-        filename = UUID.randomUUID().toString(),
+        filename = this.imageUrl.hashCode().toString(), // Generate a unique filename based on the hash of the imageUrl
         imageurl = this.imageUrl,
         classes = this.title.split(", ")
     )

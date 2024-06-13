@@ -28,12 +28,17 @@ import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.data.Outfit
 import com.capstone.attirely.viewmodel.SearchViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SearchContent(outfits: List<Outfit>) {
     val viewModel: SearchViewModel = viewModel()
     val favorites by viewModel.favorites.collectAsState(initial = emptySet())
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchFavorites()
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -47,6 +52,11 @@ fun SearchContent(outfits: List<Outfit>) {
             ) {
                 rowOutfits.forEach { outfit ->
                     var isFavorite by remember { mutableStateOf(favorites.contains(outfit.filename)) }
+
+                    LaunchedEffect(favorites) {
+                        isFavorite = favorites.contains(outfit.filename)
+                    }
+
                     Card(
                         modifier = Modifier
                             .width(0.dp)
@@ -110,7 +120,9 @@ fun SearchContent(outfits: List<Outfit>) {
                                     IconButton(
                                         onClick = {
                                             isFavorite = !isFavorite
-                                            viewModel.toggleFavorite(outfit)
+                                            coroutineScope.launch {
+                                                viewModel.toggleFavorite(outfit)
+                                            }
                                         },
                                         modifier = Modifier
                                             .size(28.dp)
