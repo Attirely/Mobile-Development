@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -29,7 +29,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +38,9 @@ import com.capstone.attirely.viewmodel.SearchViewModel
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
-    val outfits by viewModel.outfits.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val outfits by viewModel.filteredOutfits.collectAsState()
+
     Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -79,7 +80,6 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                             .width(45.dp)
                             .fillMaxHeight()
                             .background(color = Color.Transparent)
-
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_search),
@@ -92,8 +92,8 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                         )
                     }
                     TextField(
-                        value = "",
-                        onValueChange = { /*TODO*/ },
+                        value = searchQuery,
+                        onValueChange = { viewModel.updateSearchQuery(it) },
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(start = 16.dp),
@@ -118,10 +118,8 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                     )
                 }
             }
-
         }
         Spacer(modifier = Modifier.height(16.dp))
         SearchContent(outfits = outfits)
-
     }
 }

@@ -7,9 +7,7 @@ import com.capstone.attirely.data.Content
 import com.capstone.attirely.retrofit.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -19,6 +17,9 @@ class SearchViewModel : ViewModel() {
 
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -65,9 +66,23 @@ class SearchViewModel : ViewModel() {
         }
     }
 
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
     private fun generateDocumentId(input: String): String {
         return input.hashCode().toString() // Generate a valid document ID
     }
+
+    val filteredOutfits: StateFlow<List<Outfit>> = combine(_outfits, _searchQuery) { outfits, query ->
+        if (query.isBlank()) {
+            outfits
+        } else {
+            outfits.filter { outfit ->
+                outfit.classes.any { it.contains(query, ignoreCase = true) }
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }
 
 fun Outfit.toContent(): Content {
