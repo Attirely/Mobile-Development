@@ -9,13 +9,14 @@ import com.capstone.attirely.R
 import com.google.android.gms.auth.api.identity.SignInCredential
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.stevdzasan.onetap.OneTapSignInState
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -24,6 +25,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     val loginResult = MutableLiveData<Result<GoogleSignInAccount>>()
     val firebaseAuthResult = MutableLiveData<Result<FirebaseUser>>()
+    private val oneTapClient: SignInClient = Identity.getSignInClient(application)
 
     fun handleSignInResult(tokenId: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -51,4 +53,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
     }
+
+    fun getOneTapClient(): SignInClient = oneTapClient
 }

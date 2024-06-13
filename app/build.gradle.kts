@@ -70,6 +70,7 @@ dependencies {
     implementation (libs.androidx.runtime.livedata)
     implementation(platform(libs.firebase.bom))
     implementation(libs.play.services.auth)
+    implementation (libs.androidx.credentials)
     implementation(libs.onetapcompose)
     implementation (libs.coil.compose)
     implementation (libs.androidx.foundation.v120)

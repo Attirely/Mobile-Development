@@ -1,30 +1,24 @@
 package com.capstone.attirely
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,10 +44,33 @@ import com.google.firebase.FirebaseApp
 import com.stevdzasan.onetap.OneTapSignInWithGoogle
 import com.stevdzasan.onetap.rememberOneTapSignInState
 import kotlinx.coroutines.launch
-
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.Task
 
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
+    private val oneTapSignInLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val credential = result.data?.let { Identity.getSignInClient(this).getSignInCredentialFromIntent(it) }
+            credential?.googleIdToken?.let { loginViewModel.handleSignInResult(it) }
+        } else {
+            Log.e("OneTapSignIn", "One-tap sign-in failed")
+            initiateRegularGoogleSignIn()
+        }
+    }
+
+    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            handleSignInResult(task)
+        } else {
+            Log.e("GoogleSignIn", "Google sign-in failed")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +91,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onDialogDismissed = { message ->
                         Log.d("OneTapSignIn", message)
+                        initiateRegularGoogleSignIn()
                     }
                 )
 
@@ -95,11 +113,44 @@ class MainActivity : ComponentActivity() {
                     }
                     result.onFailure { e ->
                         Log.e("FirebaseAuthError", "Error: ${e.message}")
+                        initiateRegularGoogleSignIn()
                     }
                 }
 
                 WelcomePage(onGoogleSignInClick = { oneTapSignInState.open() })
             }
+        }
+    }
+
+    private fun initiateRegularGoogleSignIn() {
+        val signInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .build()
+
+        loginViewModel.getOneTapClient().beginSignIn(signInRequest)
+            .addOnSuccessListener { result ->
+                oneTapSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
+            }
+            .addOnFailureListener { e ->
+                Log.e("OneTapSignInError", "Error: ${e.message}")
+                // Fallback to regular Google sign-in
+                val signInIntent = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signInIntent
+                googleSignInLauncher.launch(signInIntent)
+            }
+    }
+
+    private fun handleSignInResult(task: Task<GoogleSignInAccount>) {
+        try {
+            val account = task.getResult(Exception::class.java)
+            account?.idToken?.let { loginViewModel.handleSignInResult(it) }
+        } catch (e: Exception) {
+            Log.e("GoogleSignInError", "Error: ${e.message}")
         }
     }
 
@@ -148,8 +199,7 @@ fun WelcomePage(onGoogleSignInClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxSize(0.8f),
                 painter = painterResource(id = images[page]),
-                contentDescription = "Carousel Image ${page + 1}"
-            )
+                contentDescription = "Carousel Image ${page + 1}")
         }
 
         Text(
@@ -229,7 +279,6 @@ fun WelcomePage(onGoogleSignInClick: () -> Unit) {
         }
     }
 }
-
 
 @Preview
 @Composable

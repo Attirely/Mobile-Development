@@ -7,6 +7,7 @@ activityComposeVersion = "1.6.1"
 agp = "8.4.1"
 androidxFoundation = "1.2.0"
 coilCompose = "2.1.0"
+credentials = "1.2.2"
 firebaseBom = "33.1.0"
 foundation = "1.6.7"
 foundationVersion = "1.4.0-alpha03"
@@ -42,6 +43,7 @@ accompanist-pager-indicators-v0280 = { module = "com.google.accompanist:accompan
 accompanist-pager-v0261alpha = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPagerVersion" }
 androidx-activity-compose-v161 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
 androidx-foundation-v120 = { module = "androidx.compose.foundation:foundation", version.ref = "androidxFoundation" }
 androidx-foundation-v140alpha03 = { module = "androidx.compose.foundation:foundation", version.ref = "foundationVersion" }
