@@ -16,6 +16,7 @@
     <string name="search">Search...</string>
     <string name="add">Add Your Outfit</string>
     <string name="outfit_name">Outfit name...</string>
+    <string name="outfit_name2">Outfit name</string>
     <string name="analyze">Analyze % outfit</string>
     <string name="analyzing">Analyzing your outfit...</string>
     <string name="category">Category</string>
