@@ -83,7 +83,9 @@ fun AddScreen(navController: NavController) {
 
         if (showAddResult) {
             AddResult(outfitData = outfitWidgets.filter { it.first != null && it.second.isNotBlank() }
-                .map { OutfitData(it.first?.toString(), it.second) })
+                .map { OutfitData(it.first?.toString(), it.second)}
+                .toList(), navController = navController
+            )
         } else {
             AddSection(navController = navController, outfitWidgets = outfitWidgets) {
                 showAddResult = true

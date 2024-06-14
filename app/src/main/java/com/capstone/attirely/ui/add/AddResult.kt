@@ -1,6 +1,14 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,15 +31,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.data.OutfitData
+import com.capstone.attirely.viewmodel.AddResultViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
-fun AddResult(outfitData: List<OutfitData>) {
+fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
+    val viewModel: AddResultViewModel = viewModel()
+    val scope = rememberCoroutineScope()
+    val user = FirebaseAuth.getInstance().currentUser
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -42,13 +63,48 @@ fun AddResult(outfitData: List<OutfitData>) {
             itemsIndexed(outfitData) { index, data ->
                 AddResultComponent(
                     outfitData = data,
-                    isLastItem = index == outfitData.size - 1
+                    isLastItem = index == outfitData.size - 1,
+                    viewModel = viewModel
                 )
             }
         }
         FloatingActionButton(
             onClick = {
+                scope.launch {
+                    outfitData.forEach { data ->
+                        val storageRef = FirebaseStorage.getInstance().reference
+                        val imageRef = storageRef.child("result_images/${UUID.randomUUID()}.jpg")
+                        val uploadTask = imageRef.putFile(data.imageUri!!.toUri())
 
+                        uploadTask.continueWithTask { task ->
+                            if (!task.isSuccessful) {
+                                task.exception?.let { throw it }
+                            }
+                            imageRef.downloadUrl
+                        }.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val downloadUri = task.result
+                                val outfit = hashMapOf(
+                                    "imageUrl" to downloadUri.toString(),
+                                    "text" to data.text,
+                                    "category" to (viewModel.categoryState.value[data.imageUri.toString()] ?: "")
+                                )
+                                user?.let {
+                                    FirebaseFirestore.getInstance()
+                                        .collection("users")
+                                        .document(it.uid)
+                                        .collection("closet")
+                                        .add(outfit)
+                                }
+                            } else {
+                                // Handle failures
+                            }
+                        }
+                    }
+                    navController.navigate("add") {
+                        popUpTo("add") { inclusive = true }
+                    }
+                }
             },
             containerColor = colorResource(id = R.color.white),
             shape = RoundedCornerShape(25.dp),
@@ -75,7 +131,8 @@ fun AddResult(outfitData: List<OutfitData>) {
                         .height(60.dp)
                         .padding(2.dp)
                         .width(60.dp),
-                    onClick = { }) {
+                    onClick = { }
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_right_down),
                         contentDescription = "Analyze",
@@ -88,7 +145,11 @@ fun AddResult(outfitData: List<OutfitData>) {
 }
 
 @Composable
-fun AddResultComponent(outfitData: OutfitData, isLastItem: Boolean) {
+fun AddResultComponent(
+    outfitData: OutfitData,
+    isLastItem: Boolean,
+    viewModel: AddResultViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,8 +192,11 @@ fun AddResultComponent(outfitData: OutfitData, isLastItem: Boolean) {
             }
             Column {
                 CustomBasicTextField(
-                    text = "",
-                    placeholder = stringResource(id = R.string.category)
+                    text = viewModel.categoryState.value[outfitData.imageUri.toString()] ?: "",
+                    placeholder = stringResource(id = R.string.category),
+                    onTextChanged = { newText ->
+                        viewModel.updateCategory(outfitData.imageUri.toString(), newText)
+                    }
                 )
                 Text(
                     text = stringResource(id = R.string.category),
@@ -149,7 +213,8 @@ fun AddResultComponent(outfitData: OutfitData, isLastItem: Boolean) {
 @Composable
 fun CustomBasicTextField(
     text: String,
-    placeholder: String
+    placeholder: String,
+    onTextChanged: (String) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -161,7 +226,7 @@ fun CustomBasicTextField(
     ) {
         BasicTextField(
             value = text,
-            onValueChange = { },
+            onValueChange = onTextChanged,
             textStyle = TextStyle(
                 color = Color.White,
                 fontSize = 16.sp

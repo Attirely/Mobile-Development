@@ -49,7 +49,10 @@ fun MainScreen() {
             composable("loading_screen") { LoadingScreen() }
             composable("add_result") { backStackEntry ->
                 val outfitData = backStackEntry.arguments?.getParcelableArrayList<OutfitData>("outfitData")
-                AddResult(outfitData ?: emptyList())
+                AddResult(
+                    navController = navController,
+                    outfitData = outfitData ?: emptyList()
+                )
             }
         }
         val navBackStackEntry by navController.currentBackStackEntryAsState()
