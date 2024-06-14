@@ -1,36 +1,36 @@
-package com.capstone.attirely.ui.add
-
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
+import com.capstone.attirely.data.OutfitData
 
 @Composable
-fun AddResult() {
+fun AddResult(outfitData: List<OutfitData>) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -39,18 +39,61 @@ fun AddResult() {
             .padding(36.dp)
     ) {
         LazyColumn {
-            item {
-                AddResultComponen()
+            itemsIndexed(outfitData) { index, data ->
+                AddResultComponent(
+                    outfitData = data,
+                    isLastItem = index == outfitData.size - 1
+                )
             }
+        }
+        FloatingActionButton(
+            onClick = {
 
+            },
+            containerColor = colorResource(id = R.color.white),
+            shape = RoundedCornerShape(25.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .fillMaxWidth()
+                .height(66.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 40.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Add ${outfitData.size} Outfit",
+                    color = colorResource(id = R.color.primary),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                IconButton(
+                    modifier = Modifier
+                        .height(60.dp)
+                        .padding(2.dp)
+                        .width(60.dp),
+                    onClick = { }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_right_down),
+                        contentDescription = "Analyze",
+                        tint = colorResource(id = R.color.primary),
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AddResultComponen() {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        //image palcement
+fun AddResultComponent(outfitData: OutfitData, isLastItem: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = if (isLastItem) 102.dp else 32.dp, top = 16.dp)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,85 +101,84 @@ fun AddResultComponen() {
                 .height(300.dp)
                 .background(color = colorResource(id = R.color.white))
         ) {
-
+            if (outfitData.imageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = outfitData.imageUri),
+                    contentDescription = "Selected Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
         Row(
             modifier = Modifier
-                .padding(top = 20.dp)
-                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+                .padding(top = 30.dp, start = 8.dp, end = 8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextField(
-                value = "",
-                onValueChange = { },
-                modifier = Modifier
-                    .width(120.dp)
-                    .height(70.dp)
-                    .align(Alignment.CenterVertically),
-                textStyle = TextStyle(
+            Column {
+                CustomBasicTextField(
+                    text = outfitData.text,
+                    placeholder = stringResource(id = R.string.outfit_name)
+                )
+                Text(
+                    text = stringResource(id = R.string.outfit_name2),
+                    fontSize = 12.sp,
                     color = Color.White,
-                    fontSize = 16.sp
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    cursorColor = Color.White,
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                ),
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.outfit_name),
-                        color = colorResource(id = R.color.lightGray),
-                        fontSize = 14.sp,
-                    )
-                }
-            )
-            TextField(
-                value = "",
-                onValueChange = { },
-                modifier = Modifier
-                    .width(120.dp)
-                    .height(70.dp)
-                    .align(Alignment.CenterVertically),
-                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            }
+            Column {
+                CustomBasicTextField(
+                    text = "",
+                    placeholder = stringResource(id = R.string.category)
+                )
+                Text(
+                    text = stringResource(id = R.string.category),
+                    fontSize = 12.sp,
                     color = Color.White,
-                    fontSize = 16.sp
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    cursorColor = Color.White,
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                ),
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.category),
-                        color = colorResource(id = R.color.lightGray),
-                        fontSize = 14.sp,
-                    )
-                }
-            )
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                text = stringResource(id = R.string.outfit_name2),
-                color = Color.White,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            Text(
-                text = stringResource(id = R.string.category),
-                color = Color.White,
-                fontSize = 10.sp,
-                modifier = Modifier.padding(top = 8.dp, end = 80.dp)
-            )
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            }
         }
     }
 }
 
-@Preview
 @Composable
-fun AddSectionPreview() {
-    AddResult()
+fun CustomBasicTextField(
+    text: String,
+    placeholder: String
+) {
+    Column(
+        modifier = Modifier
+            .width(120.dp)
+            .height(70.dp)
+            .background(Color.Transparent)
+            .padding(horizontal = 0.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        BasicTextField(
+            value = text,
+            onValueChange = { },
+            textStyle = TextStyle(
+                color = Color.White,
+                fontSize = 16.sp
+            ),
+            decorationBox = { innerTextField ->
+                Box(modifier = Modifier.padding(start = 0.dp)) {
+                    if (text.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            color = colorResource(id = R.color.lightGray),
+                            fontSize = 14.sp
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+        Divider(color = Color.White, thickness = 1.dp)
+    }
 }

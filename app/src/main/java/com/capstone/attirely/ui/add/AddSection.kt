@@ -36,14 +36,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
+import com.capstone.attirely.data.OutfitData
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun AddSection(navController: NavController) {
+fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri?, String>>, onAnalyzeClick: () -> Unit) {
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    val outfitWidgets = remember { mutableStateListOf<Pair<Uri?, String>>() }
 
     if (outfitWidgets.isEmpty()) {
         repeat(3) { outfitWidgets.add(Pair(null, "")) }
@@ -113,7 +112,7 @@ fun AddSection(navController: NavController) {
                         errorMessage = "Please fill at least one image and text."
                         showError = true
                     } else {
-                        navController.navigate("loading_screen")
+                        onAnalyzeClick()
                     }
                 },
                 containerColor = colorResource(id = R.color.white),
@@ -140,7 +139,7 @@ fun AddSection(navController: NavController) {
                             .height(60.dp)
                             .padding(2.dp)
                             .width(60.dp),
-                        onClick = { navController.navigate("loading_screen") }) {
+                        onClick = { onAnalyzeClick() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_right_down),
                             contentDescription = "Analyze",

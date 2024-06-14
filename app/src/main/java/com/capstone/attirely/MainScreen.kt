@@ -1,5 +1,7 @@
 package com.capstone.attirely
 
+import AddResult
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.capstone.attirely.data.OutfitData
 import com.capstone.attirely.ui.add.AddScreen
 import com.capstone.attirely.ui.home.HomeScreen
 import com.capstone.attirely.ui.laoding.LoadingScreen
@@ -44,6 +47,10 @@ fun MainScreen() {
             composable("profile") { ProfileScreen(navController) }
             composable("add") { AddScreen(navController) }
             composable("loading_screen") { LoadingScreen() }
+            composable("add_result") { backStackEntry ->
+                val outfitData = backStackEntry.arguments?.getParcelableArrayList<OutfitData>("outfitData")
+                AddResult(outfitData ?: emptyList())
+            }
         }
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
