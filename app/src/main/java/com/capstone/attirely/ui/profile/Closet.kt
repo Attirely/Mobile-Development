@@ -1,5 +1,6 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,30 +8,33 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.capstone.attirely.R
 import com.capstone.attirely.data.ClosetItem
 
 @Composable
 fun Closet(viewModel: ProfileViewModel = viewModel()) {
     val closetItems by viewModel.filteredClosetItems.collectAsState()
+    val selectedItems by viewModel.selectedClosetItems.collectAsState()
+    val isSelectionMode by viewModel.isSelectionMode.collectAsState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 4.dp,end = 4.dp, top=16.dp)
+            .padding(start = 4.dp, end = 4.dp, top = 16.dp)
     ) {
         items(closetItems.chunked(2)) { rowItems ->
             Row(
@@ -38,7 +42,18 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 rowItems.forEach { item ->
-                    ClosetItemCard(item, Modifier.weight(1f))
+                    ClosetItemCard(
+                        item = item,
+                        isSelected = selectedItems.contains(item),
+                        isSelectionMode = isSelectionMode,
+                        onSelect = {
+                            if (!isSelectionMode) {
+                                viewModel.activateSelectionMode()
+                            }
+                            viewModel.toggleSelectClosetItem(item)
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 if (rowItems.size < 2) {
                     Spacer(modifier = Modifier.weight(1f))
@@ -49,11 +64,31 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
 }
 
 @Composable
-fun ClosetItemCard(item: ClosetItem, modifier: Modifier = Modifier) {
+fun ClosetItemCard(
+    item: ClosetItem,
+    isSelected: Boolean,
+    isSelectionMode: Boolean,
+    onSelect: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .padding(8.dp)
-            .height(200.dp),
+            .height(200.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        if (!isSelectionMode) {
+                            onSelect()
+                        }
+                    },
+                    onTap = {
+                        if (isSelectionMode) {
+                            onSelect()
+                        }
+                    }
+                )
+            },
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 16.dp,
@@ -99,6 +134,14 @@ fun ClosetItemCard(item: ClosetItem, modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .padding(bottom = 4.dp)
                         .align(Alignment.BottomStart)
+                )
+            }
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(colorResource(id = R.color.secondary).copy(alpha = 0.3f))
+                        .clip(RoundedCornerShape(20.dp))
                 )
             }
         }

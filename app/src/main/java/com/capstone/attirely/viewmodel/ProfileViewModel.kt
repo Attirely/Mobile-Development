@@ -22,6 +22,9 @@ class ProfileViewModel : ViewModel() {
     private val _closetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
     val closetItems: StateFlow<List<ClosetItem>> = _closetItems
 
+    private val _selectedClosetItems = MutableStateFlow<Set<ClosetItem>>(emptySet())
+    val selectedClosetItems: StateFlow<Set<ClosetItem>> = _selectedClosetItems
+
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites
 
@@ -33,6 +36,9 @@ class ProfileViewModel : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _isSelectionMode = MutableStateFlow(false)
+    val isSelectionMode: StateFlow<Boolean> = _isSelectionMode
 
     init {
         fetchUserDetails()
@@ -79,7 +85,7 @@ class ProfileViewModel : ViewModel() {
                 _closetItems.value = closetItems
             }
             .addOnFailureListener {
-                // Handle failure if needed
+                // Handle the error
             }
     }
 
@@ -112,4 +118,21 @@ class ProfileViewModel : ViewModel() {
             items.filter { it.text.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun toggleSelectClosetItem(item: ClosetItem) {
+        _selectedClosetItems.value = if (_selectedClosetItems.value.contains(item)) {
+            _selectedClosetItems.value - item
+        } else {
+            _selectedClosetItems.value + item
+        }
+    }
+
+    fun activateSelectionMode() {
+        _isSelectionMode.value = true
+    }
+
+    fun deactivateSelectionMode() {
+        _isSelectionMode.value = false
+        _selectedClosetItems.value = emptySet()
+    }
 }
