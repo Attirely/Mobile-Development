@@ -1,5 +1,7 @@
 package com.capstone.attirely.ui.profile
 
+import Closet
+import ProfileViewModel
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -33,7 +35,6 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.ui.home.polyFontFamily
-import com.capstone.attirely.viewmodel.ProfileViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 
@@ -57,7 +58,6 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
     LaunchedEffect(selectedTab.value) {
         if (selectedTab.value == "closet") {
             minHeight = 250.dp
-            minHeight = 250.dp
             maxHeight = 380.dp
             boxHeight = 250.dp
         } else {
@@ -67,7 +67,9 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
         }
     }
 
-    val user by viewModel.user.observeAsState()
+    val user by viewModel.user.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredClosetItems by viewModel.filteredClosetItems.collectAsState()
 
     Column(
         modifier = Modifier
@@ -203,7 +205,8 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
                             modifier = Modifier
@@ -234,8 +237,8 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                                 )
                             }
                             TextField(
-                                value = "",
-                                onValueChange = { /*TODO*/ },
+                                value = searchQuery,
+                                onValueChange = { viewModel.updateSearchQuery(it) },
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(start = 16.dp),
@@ -283,7 +286,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
         if (selectedTab.value == "favorites") {
             Favorites()
         } else {
-            Closet()
+            Closet(viewModel = viewModel)
         }
     }
 }

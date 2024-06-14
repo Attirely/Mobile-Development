@@ -1,5 +1,6 @@
 package com.capstone.attirely.ui.profile
 
+import ProfileViewModel
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,13 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
-import com.capstone.attirely.viewmodel.ProfileViewModel
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun Favorites(viewModel: ProfileViewModel = viewModel()) {
-    val favoritesList by viewModel.favoritesList.observeAsState(emptyList())
-    val isLoadingFavorites by viewModel.isLoadingFavorites.observeAsState(false)
+    val favoritesList by viewModel.favoritesList.collectAsState()
+    val isLoadingFavorites by viewModel.isLoadingFavorites.collectAsState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
