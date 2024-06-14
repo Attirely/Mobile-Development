@@ -117,12 +117,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                WelcomePage(onGoogleSignInClick = { oneTapSignInState.open() })
+                WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
             }
         }
     }
 
-    private fun initiateRegularGoogleSignIn() {
+    private fun initiateOneTapSignIn() {
         val signInRequest = BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
@@ -139,10 +139,13 @@ class MainActivity : ComponentActivity() {
             }
             .addOnFailureListener { e ->
                 Log.e("OneTapSignInError", "Error: ${e.message}")
-                // Fallback to regular Google sign-in
-                val signInIntent = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signInIntent
-                googleSignInLauncher.launch(signInIntent)
+                initiateRegularGoogleSignIn()
             }
+    }
+
+    private fun initiateRegularGoogleSignIn() {
+        val signInIntent = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signInIntent
+        googleSignInLauncher.launch(signInIntent)
     }
 
     private fun handleSignInResult(task: Task<GoogleSignInAccount>) {

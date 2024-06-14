@@ -70,7 +70,9 @@ fun AddScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.width(20.dp))
         }
-        AddSection()
+        AddSection(
+            navController = navController
+        )
     }
 }
 

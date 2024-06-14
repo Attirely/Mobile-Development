@@ -60,12 +60,12 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                         fontFamily = polyFontFamily
                     )
                     Spacer(modifier = Modifier.height(40.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth(0.80f)
                                 .height(55.dp)
-                                .padding(horizontal = 22.dp)
+                                .padding(start=22.dp)
                                 .border(
                                     width = 2.dp,
                                     color = colorResource(id = R.color.white),
@@ -128,6 +128,7 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                                 contentScale = ContentScale.Fit
                             )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
             }
@@ -142,7 +143,7 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 165.dp, end = 28.dp),
+                    .padding(top = 165.dp, end = 18.dp),
                 contentAlignment = Alignment.TopEnd
             ) {
                 Column(

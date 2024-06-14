@@ -23,6 +23,7 @@ activityCompose = "1.9.0"
 composeBom = "2023.08.00"
 lifecycleRuntimeKtxVersion = "2.4.0"
 lifecycleViewmodelCompose = "2.8.1"
+lottieComposeVersion = "4.2.2"
 material = "1.6.7"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.0.0"
@@ -44,6 +45,7 @@ accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pa
 accompanist-pager-indicators-v0261alpha = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicatorsVersion" }
 accompanist-pager-indicators-v0280 = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager-v0261alpha = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPagerVersion" }
+android-lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieComposeVersion" }
 androidx-activity-compose-v161 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }

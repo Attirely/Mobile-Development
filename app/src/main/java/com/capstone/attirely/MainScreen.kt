@@ -25,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.capstone.attirely.ui.add.AddScreen
 import com.capstone.attirely.ui.home.HomeScreen
+import com.capstone.attirely.ui.laoding.LoadingScreen
 import com.capstone.attirely.ui.profile.ProfileScreen
 import com.capstone.attirely.ui.search.SearchScreen
 import com.capstone.attirely.ui.theme.AttirelyTheme
@@ -42,10 +43,11 @@ fun MainScreen() {
             composable("search") { SearchScreen() }
             composable("profile") { ProfileScreen(navController) }
             composable("add") { AddScreen(navController) }
+            composable("loading_screen") { LoadingScreen() }
         }
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
-        if (currentRoute != "add") {
+        if (currentRoute != "add" && currentRoute != "loading_screen") {
             BottomNavBar(
                 navController = navController,
                 modifier = Modifier.align(Alignment.BottomCenter)
