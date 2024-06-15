@@ -22,8 +22,8 @@ class ProfileViewModel : ViewModel() {
     private val _closetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
     val closetItems: StateFlow<List<ClosetItem>> = _closetItems
 
-    private val _selectedClosetItems = MutableStateFlow<Set<ClosetItem>>(emptySet())
-    val selectedClosetItems: StateFlow<Set<ClosetItem>> = _selectedClosetItems
+    private val _selectedClosetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
+    val selectedClosetItems: StateFlow<List<ClosetItem>> = _selectedClosetItems
 
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites
@@ -74,7 +74,7 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-    private fun fetchCloset() {
+    fun fetchCloset() {
         val user = auth.currentUser ?: return
         db.collection("users").document(user.uid).collection("closet")
             .get()
@@ -133,6 +133,6 @@ class ProfileViewModel : ViewModel() {
 
     fun deactivateSelectionMode() {
         _isSelectionMode.value = false
-        _selectedClosetItems.value = emptySet()
+        _selectedClosetItems.value = emptyList()
     }
 }
