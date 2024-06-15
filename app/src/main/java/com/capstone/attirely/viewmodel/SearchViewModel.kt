@@ -28,6 +28,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val _genderFilter = MutableStateFlow("all")
     val genderFilter: StateFlow<String> = _genderFilter
 
+    private val _selectedCategories = MutableStateFlow<List<String>>(emptyList())
+    val selectedCategories: StateFlow<List<String>> = _selectedCategories
+
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -93,17 +96,19 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         fetchFavorites()
     }
 
+    fun updateSelectedCategories(categories: List<String>) {
+        _selectedCategories.value = categories
+    }
+
     private fun generateDocumentId(input: String): String {
         return input.hashCode().toString()
     }
 
-    val filteredOutfits: StateFlow<List<Outfit>> = combine(_outfits, _searchQuery) { outfits, query ->
-        if (query.isBlank()) {
-            outfits
-        } else {
-            outfits.filter { outfit ->
-                outfit.classes.any { it.contains(query, ignoreCase = true) }
-            }
+    val filteredOutfits: StateFlow<List<Outfit>> = combine(_outfits, _searchQuery, _selectedCategories) { outfits, query, categories ->
+        outfits.filter { outfit ->
+            val matchesQuery = query.isBlank() || outfit.classes.any { it.contains(query, ignoreCase = true) }
+            val matchesCategory = categories.isEmpty() || outfit.classes.any { it in categories }
+            matchesQuery && matchesCategory
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -118,12 +123,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             dataStoreManager.saveCategories(categories)
         }
     }
+
     fun clearData() {
         viewModelScope.launch {
             dataStoreManager.clearData()
         }
     }
-
 }
 
 fun Outfit.toContent(): Content {

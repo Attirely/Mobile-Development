@@ -104,7 +104,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostCont
                             selectedItems.map { it.imageUrl }
                         )
                         viewModel.saveCategories(
-                            selectedItems.map { it.text }
+                            selectedItems.map { it.category }
                         )
                         viewModel.navigateToSearch(navController)
                     }

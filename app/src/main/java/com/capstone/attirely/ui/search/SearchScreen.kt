@@ -1,8 +1,11 @@
 package com.capstone.attirely.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +43,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -48,6 +55,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
+    var showGenderOptions by remember { mutableStateOf(false) }
+    var selectedGenderIcon by remember { mutableStateOf(R.drawable.ic_gender) }
     val searchQuery by viewModel.searchQuery.collectAsState()
     val outfits by viewModel.filteredOutfits.collectAsState()
     val imageUrls by viewModel.imageUrls.collectAsState()
@@ -60,6 +69,8 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
     LaunchedEffect(imageUrls, categories) {
         if (imageUrls.isEmpty() && categories.isEmpty()) {
             viewModel.updateSearchQuery("") // Optional: reset the search query
+        } else {
+            viewModel.updateSelectedCategories(categories)
         }
     }
 
@@ -224,10 +235,10 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                                 modifier = Modifier
                                     .size(50.dp)
                                     .background(color = Color.White, shape = CircleShape),
-                                onClick = { }
+                                onClick = { showGenderOptions = !showGenderOptions }
                             ) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.ic_gender),
+                                    painter = painterResource(id = selectedGenderIcon),
                                     contentDescription = "Choose Gender",
                                     modifier = Modifier.size(40.dp),
                                     contentScale = ContentScale.Fit
@@ -240,6 +251,58 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             SearchContent(outfits = outfits)
+        }
+        AnimatedVisibility(
+            visible = showGenderOptions,
+            enter = androidx.compose.animation.fadeIn(animationSpec = tween(durationMillis = 300)),
+            exit = androidx.compose.animation.fadeOut(animationSpec = tween(durationMillis = 300))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 165.dp, end = 18.dp),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    IconButton(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .background(color = Color.White, shape = CircleShape),
+                        onClick = {
+                            selectedGenderIcon = R.drawable.ic_male
+                            showGenderOptions = false
+                            viewModel.updateGenderFilter("male")
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_male),
+                            contentDescription = "Male",
+                            modifier = Modifier.size(40.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    IconButton(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .background(color = Color.White, shape = CircleShape),
+                        onClick = {
+                            selectedGenderIcon = R.drawable.ic_female
+                            showGenderOptions = false
+                            viewModel.updateGenderFilter("female")
+                        }
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_female),
+                            contentDescription = "Female",
+                            modifier = Modifier.size(40.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
         }
     }
 }
