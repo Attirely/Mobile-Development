@@ -1,5 +1,8 @@
 package com.capstone.attirely.viewmodel
 
+import DataStoreManager
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.capstone.attirely.data.Outfit
@@ -10,21 +13,26 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class SearchViewModel : ViewModel() {
+class SearchViewModel(application: Application) : AndroidViewModel(application) {
+    private val dataStoreManager = DataStoreManager(application)
+
     private val _outfits = MutableStateFlow<List<Outfit>>(emptyList())
-    val outfits: StateFlow<List<Outfit>> = _outfits.asStateFlow()
+    val outfits: StateFlow<List<Outfit>> = _outfits
 
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
-    val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
+    val favorites: StateFlow<Set<String>> = _favorites
 
     private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    val searchQuery: StateFlow<String> = _searchQuery
 
     private val _genderFilter = MutableStateFlow("all")
-    val genderFilter: StateFlow<String> = _genderFilter.asStateFlow()
+    val genderFilter: StateFlow<String> = _genderFilter
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
+    val imageUrls: StateFlow<List<String>> = dataStoreManager.imageUrls.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val categories: StateFlow<List<String>> = dataStoreManager.categories.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
         fetchFilteredOutfits("all")
@@ -52,7 +60,7 @@ class SearchViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { result ->
                 val favorites = result.map { document ->
-                    document["imageUrl"].toString() // Use imageUrl as the unique identifier
+                    document["imageUrl"].toString()
                 }.toSet()
                 _favorites.value = favorites
             }
@@ -82,11 +90,11 @@ class SearchViewModel : ViewModel() {
     fun updateGenderFilter(gender: String) {
         _genderFilter.value = gender
         fetchFilteredOutfits(gender)
-        fetchFavorites() // Ensure favorites are fetched whenever the gender filter is updated
+        fetchFavorites()
     }
 
     private fun generateDocumentId(input: String): String {
-        return input.hashCode().toString() // Generate a valid document ID
+        return input.hashCode().toString()
     }
 
     val filteredOutfits: StateFlow<List<Outfit>> = combine(_outfits, _searchQuery) { outfits, query ->
@@ -98,6 +106,24 @@ class SearchViewModel : ViewModel() {
             }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun saveImageUrls(urls: List<String>) {
+        viewModelScope.launch {
+            dataStoreManager.saveImageUrls(urls)
+        }
+    }
+
+    fun saveCategories(categories: List<String>) {
+        viewModelScope.launch {
+            dataStoreManager.saveCategories(categories)
+        }
+    }
+    fun clearData() {
+        viewModelScope.launch {
+            dataStoreManager.clearData()
+        }
+    }
+
 }
 
 fun Outfit.toContent(): Content {

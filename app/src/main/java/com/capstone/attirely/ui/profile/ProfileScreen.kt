@@ -38,7 +38,6 @@ import com.capstone.attirely.ui.home.polyFontFamily
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel = viewModel()) {
     val selectedTab = remember { mutableStateOf("favorites") }
@@ -286,7 +285,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
         if (selectedTab.value == "favorites") {
             Favorites()
         } else {
-            Closet(viewModel = viewModel)
+            Closet(viewModel = viewModel, navController = navController)
         }
     }
 }

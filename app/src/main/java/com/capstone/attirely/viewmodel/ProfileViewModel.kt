@@ -1,5 +1,7 @@
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.capstone.attirely.data.ClosetItem
 import com.capstone.attirely.data.Content
 import com.capstone.attirely.data.User
@@ -13,7 +15,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+    private val dataStoreManager = DataStoreManager(application)
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
@@ -152,11 +155,40 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-    val filteredClosetItems: StateFlow<List<ClosetItem>> = combine(_closetItems, _searchQuery) { items, query ->
-        if (query.isBlank()) {
-            items
-        } else {
-            items.filter { it.text.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
+    // Function to set search query and navigate to the search screen
+    fun navigateToSearch(navController: NavController) {
+        navController.navigate("search") {
+            popUpTo(navController.graph.startDestinationId) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
         }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
+
+    fun saveImageUrls(urls: List<String>) {
+        viewModelScope.launch {
+            dataStoreManager.saveImageUrls(urls)
+        }
+    }
+
+    fun saveCategories(categories: List<String>) {
+        viewModelScope.launch {
+            dataStoreManager.saveCategories(categories)
+        }
+    }
+
+    val filteredClosetItems: StateFlow<List<ClosetItem>> =
+        combine(_closetItems, _searchQuery) { items, query ->
+            if (query.isBlank()) {
+                items
+            } else {
+                items.filter {
+                    it.text.contains(query, ignoreCase = true) || it.category.contains(
+                        query,
+                        ignoreCase = true
+                    )
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }

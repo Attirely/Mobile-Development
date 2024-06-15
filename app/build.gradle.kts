@@ -79,6 +79,8 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.coil.compose.v132)
     implementation(libs.firebase.storage.ktx)
+    implementation (libs.androidx.datastore.preferences)
+    implementation (libs.androidx.datastore.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

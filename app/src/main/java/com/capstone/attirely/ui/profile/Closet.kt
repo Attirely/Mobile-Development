@@ -1,3 +1,4 @@
+import android.net.Uri
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -28,13 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.data.ClosetItem
 import kotlinx.coroutines.launch
 
 @Composable
-fun Closet(viewModel: ProfileViewModel = viewModel()) {
+fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostController) {
     LaunchedEffect(Unit) {
         viewModel.fetchCloset()
     }
@@ -94,7 +97,18 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
         }
         if (selectedItems.isNotEmpty()) {
             FloatingActionButton(
-                onClick = {},
+                onClick = {
+                    val selectedItem = selectedItems.first()
+                    coroutineScope.launch {
+                        viewModel.saveImageUrls(
+                            selectedItems.map { it.imageUrl }
+                        )
+                        viewModel.saveCategories(
+                            selectedItems.map { it.text }
+                        )
+                        viewModel.navigateToSearch(navController)
+                    }
+                },
                 containerColor = colorResource(id = R.color.primary),
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
@@ -117,19 +131,15 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                             .width(220.dp)
                             .padding(start = 40.dp)
                     )
-                    IconButton(
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrow_right_down_alternate),
+                        contentDescription = "Analyze",
+                        tint = colorResource(id = R.color.white),
                         modifier = Modifier
                             .height(60.dp)
                             .padding(2.dp)
                             .width(60.dp),
-                        onClick = {}
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.arrow_right_down_alternate),
-                            contentDescription = "Analyze",
-                            tint = colorResource(id = R.color.white),
-                        )
-                    }
+                    )
                 }
             }
         }
