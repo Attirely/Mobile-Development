@@ -1,7 +1,8 @@
 package com.capstone.attirely.data
 
 data class ClosetItem(
-    val imageUrl: String = "",
+    val id: String = "",
     val text: String = "",
-    val category: String = ""
+    val category: String = "",
+    val imageUrl: String = ""
 )

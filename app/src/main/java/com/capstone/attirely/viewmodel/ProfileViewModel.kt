@@ -5,6 +5,7 @@ import com.capstone.attirely.data.Content
 import com.capstone.attirely.data.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,15 +16,13 @@ import kotlinx.coroutines.launch
 class ProfileViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val storage = FirebaseStorage.getInstance()
 
     private val _favoritesList = MutableStateFlow<List<Pair<String, Content>>>(emptyList())
     val favoritesList: StateFlow<List<Pair<String, Content>>> = _favoritesList
 
     private val _closetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
     val closetItems: StateFlow<List<ClosetItem>> = _closetItems
-
-    private val _selectedClosetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
-    val selectedClosetItems: StateFlow<List<ClosetItem>> = _selectedClosetItems
 
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites
@@ -39,6 +38,9 @@ class ProfileViewModel : ViewModel() {
 
     private val _isSelectionMode = MutableStateFlow(false)
     val isSelectionMode: StateFlow<Boolean> = _isSelectionMode
+
+    private val _selectedClosetItems = MutableStateFlow<List<ClosetItem>>(emptyList())
+    val selectedClosetItems: StateFlow<List<ClosetItem>> = _selectedClosetItems
 
     init {
         fetchUserDetails()
@@ -74,18 +76,15 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-    fun fetchCloset() {
+    private fun fetchCloset() {
         val user = auth.currentUser ?: return
         db.collection("users").document(user.uid).collection("closet")
             .get()
             .addOnSuccessListener { result ->
                 val closetItems = result.map { document ->
-                    document.toObject(ClosetItem::class.java)
+                    document.toObject(ClosetItem::class.java).copy(id = document.id)
                 }
                 _closetItems.value = closetItems
-            }
-            .addOnFailureListener {
-                // Handle the error
             }
     }
 
@@ -111,13 +110,9 @@ class ProfileViewModel : ViewModel() {
         _searchQuery.value = query
     }
 
-    val filteredClosetItems: StateFlow<List<ClosetItem>> = combine(_closetItems, _searchQuery) { items, query ->
-        if (query.isBlank()) {
-            items
-        } else {
-            items.filter { it.text.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
-        }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    fun activateSelectionMode() {
+        _isSelectionMode.value = true
+    }
 
     fun toggleSelectClosetItem(item: ClosetItem) {
         _selectedClosetItems.value = if (_selectedClosetItems.value.contains(item)) {
@@ -127,12 +122,28 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    fun activateSelectionMode() {
-        _isSelectionMode.value = true
+    fun deleteClosetItem(item: ClosetItem) {
+        val user = auth.currentUser ?: return
+        val storageRef = storage.getReferenceFromUrl(item.imageUrl)
+
+        storageRef.delete().addOnSuccessListener {
+            db.collection("users").document(user.uid).collection("closet")
+                .document(item.id)
+                .delete()
+                .addOnSuccessListener {
+                    _closetItems.value = _closetItems.value - item
+                    _selectedClosetItems.value = _selectedClosetItems.value - item
+                }
+        }.addOnFailureListener {
+            // Handle failure if needed
+        }
     }
 
-    fun deactivateSelectionMode() {
-        _isSelectionMode.value = false
-        _selectedClosetItems.value = emptyList()
-    }
+    val filteredClosetItems: StateFlow<List<ClosetItem>> = combine(_closetItems, _searchQuery) { items, query ->
+        if (query.isBlank()) {
+            items
+        } else {
+            items.filter { it.text.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true) }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }

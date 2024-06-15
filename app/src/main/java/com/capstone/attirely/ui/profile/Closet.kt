@@ -1,17 +1,17 @@
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,23 +27,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.data.ClosetItem
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @Composable
 fun Closet(viewModel: ProfileViewModel = viewModel()) {
     val closetItems by viewModel.filteredClosetItems.collectAsState()
     val selectedItems by viewModel.selectedClosetItems.collectAsState()
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.80f)){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.80f)
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,6 +67,11 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                                 }
                                 viewModel.toggleSelectClosetItem(item)
                             },
+                            onDelete = {
+                                coroutineScope.launch {
+                                    viewModel.deleteClosetItem(item)
+                                }
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -75,7 +81,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                 }
             }
         }
-        if(selectedItems.isNotEmpty()){
+        if (selectedItems.isNotEmpty()) {
             FloatingActionButton(
                 onClick = {
 
@@ -95,14 +101,14 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                 ) {
 
                     Text(
-                        text = "See recommendation from ${
-                            selectedItems.size
-                        } item(s)",
+                        text = "See recommendation from ${selectedItems.size} item(s)",
                         color = colorResource(id = R.color.white),
                         fontSize = 18.sp,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.width(220.dp).padding(start = 40.dp)
+                        modifier = Modifier
+                            .width(220.dp)
+                            .padding(start = 40.dp)
                     )
                     IconButton(
                         modifier = Modifier
@@ -120,7 +126,6 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                 }
             }
         }
-
     }
 }
 
@@ -131,12 +136,54 @@ fun ClosetItemCard(
     selectionNumber: Int,
     isSelectionMode: Boolean,
     onSelect: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var offsetX by remember { mutableStateOf(0f) }
+    val offsetAnimatable = remember { Animatable(0f) }
+    val dragThreshold = 30f // Reduced threshold for showing delete indicator
+    val deleteThreshold = 160f // Threshold for deletion
+    val trashIndicatorShown = offsetX < -dragThreshold
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(offsetX) {
+        if (offsetX == 0f) {
+            offsetAnimatable.snapTo(0f)
+        } else {
+            offsetAnimatable.animateTo(
+                targetValue = offsetX,
+                animationSpec = tween(durationMillis = 300)
+            )
+        }
+    }
+
     Card(
         modifier = modifier
             .padding(8.dp)
             .height(200.dp)
+            .draggable(
+                state = rememberDraggableState { delta ->
+                    if (delta < 0) { // Only allow dragging to the left
+                        offsetX += delta
+                        if (offsetX < -deleteThreshold) { // Threshold to delete
+                            onDelete()
+                            offsetX = 0f // Reset offset after deletion
+                        }
+                    }
+                },
+                orientation = Orientation.Horizontal,
+                onDragStarted = { offsetX = 0f },
+                onDragStopped = {
+                    coroutineScope.launch {
+                        offsetAnimatable.animateTo(
+                            targetValue = 0f,
+                            animationSpec = tween(durationMillis = 300)
+                        )
+                        offsetX = 0f
+                    }
+                }
+            )
+            .offset(x = offsetAnimatable.value.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
@@ -220,7 +267,24 @@ fun ClosetItemCard(
                         )
                     }
                 }
-
+            }
+            if (trashIndicatorShown) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Red.copy(alpha = 0.3f))
+                        .clip(RoundedCornerShape(20.dp))
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_delete),
+                        contentDescription = "Trash",
+                        tint = White,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.Center)
+                            .padding(bottom = 8.dp)
+                    )
+                }
             }
         }
     }
