@@ -35,6 +35,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun Closet(viewModel: ProfileViewModel = viewModel()) {
+    LaunchedEffect(Unit) {
+        viewModel.fetchCloset()
+    }
+
     val closetItems by viewModel.filteredClosetItems.collectAsState()
     val selectedItems by viewModel.selectedClosetItems.collectAsState()
     val isSelectionMode by viewModel.isSelectionMode.collectAsState()
@@ -70,6 +74,13 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                             onDelete = {
                                 coroutineScope.launch {
                                     viewModel.deleteClosetItem(item)
+                                    viewModel.fetchCloset()
+                                }
+                            },
+                            onEdit = { newText ->
+                                coroutineScope.launch {
+                                    viewModel.updateClosetItemText(item.id, newText)
+                                    viewModel.fetchCloset()
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -83,9 +94,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
         }
         if (selectedItems.isNotEmpty()) {
             FloatingActionButton(
-                onClick = {
-
-                },
+                onClick = {},
                 containerColor = colorResource(id = R.color.primary),
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
@@ -94,12 +103,10 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                     .height(66.dp),
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     Text(
                         text = "See recommendation from ${selectedItems.size} item(s)",
                         color = colorResource(id = R.color.white),
@@ -115,7 +122,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel()) {
                             .height(60.dp)
                             .padding(2.dp)
                             .width(60.dp),
-                        onClick = { }
+                        onClick = {}
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.arrow_right_down_alternate),
@@ -137,14 +144,19 @@ fun ClosetItemCard(
     isSelectionMode: Boolean,
     onSelect: () -> Unit,
     onDelete: () -> Unit,
+    onEdit: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val offsetAnimatable = remember { Animatable(0f) }
-    val dragThreshold = 30f // Reduced threshold for showing delete indicator
-    val deleteThreshold = 160f // Threshold for deletion
+    val dragThreshold = 30f // Reduced threshold for showing delete/edit indicator
+    val deleteThreshold = 180f // Threshold for deletion
+    val editThreshold = 180f // Threshold for showing edit indicator
     val trashIndicatorShown = offsetX < -dragThreshold
+    val editIndicatorShown = offsetX > dragThreshold
     val coroutineScope = rememberCoroutineScope()
+
+    var showEditDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(offsetX) {
         if (offsetX == 0f) {
@@ -157,17 +169,32 @@ fun ClosetItemCard(
         }
     }
 
+    if (showEditDialog) {
+        EditTextDialog(
+            initialText = item.text,
+            onDismiss = { showEditDialog = false },
+            onConfirm = { newText ->
+                onEdit(newText)
+                showEditDialog = false
+            }
+        )
+    }
+
     Card(
         modifier = modifier
             .padding(8.dp)
             .height(200.dp)
             .draggable(
                 state = rememberDraggableState { delta ->
-                    if (delta < 0) { // Only allow dragging to the left
-                        offsetX += delta
-                        if (offsetX < -deleteThreshold) { // Threshold to delete
+                    offsetX += delta
+                    when {
+                        offsetX < -deleteThreshold -> {
                             onDelete()
-                            offsetX = 0f // Reset offset after deletion
+                            offsetX = 0f
+                        }
+                        offsetX > editThreshold -> {
+                            showEditDialog = true
+                            offsetX = 0f
                         }
                     }
                 },
@@ -286,6 +313,57 @@ fun ClosetItemCard(
                     )
                 }
             }
+            if (editIndicatorShown) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Green.copy(alpha = 0.3f))
+                        .clip(RoundedCornerShape(20.dp))
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_edit),
+                        contentDescription = "Edit",
+                        tint = White,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.Center)
+                            .padding(bottom = 8.dp)
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+fun EditTextDialog(
+    initialText: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(initialText) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Edit Text") },
+        text = {
+            TextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(text = "Text") }
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(text) }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

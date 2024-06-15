@@ -76,7 +76,7 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-    private fun fetchCloset() {
+    fun fetchCloset() {
         val user = auth.currentUser ?: return
         db.collection("users").document(user.uid).collection("closet")
             .get()
@@ -131,12 +131,25 @@ class ProfileViewModel : ViewModel() {
                 .document(item.id)
                 .delete()
                 .addOnSuccessListener {
-                    _closetItems.value = _closetItems.value - item
+                    fetchCloset() // Refresh the closet items
                     _selectedClosetItems.value = _selectedClosetItems.value - item
                 }
         }.addOnFailureListener {
             // Handle failure if needed
         }
+    }
+
+    fun updateClosetItemText(itemId: String, newText: String) {
+        val user = auth.currentUser ?: return
+        db.collection("users").document(user.uid).collection("closet")
+            .document(itemId)
+            .update("text", newText)
+            .addOnSuccessListener {
+                fetchCloset() // Refresh the closet items
+            }
+            .addOnFailureListener {
+                // Handle failure if needed
+            }
     }
 
     val filteredClosetItems: StateFlow<List<ClosetItem>> = combine(_closetItems, _searchQuery) { items, query ->
