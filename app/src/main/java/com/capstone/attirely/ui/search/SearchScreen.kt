@@ -66,12 +66,8 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
         viewModel.updateSearchQuery(viewModel.searchQuery.value)
     }
 
-    LaunchedEffect(imageUrls, categories) {
-        if (imageUrls.isEmpty() && categories.isEmpty()) {
-            viewModel.updateSearchQuery("") // Optional: reset the search query
-        } else {
-            viewModel.updateSelectedCategories(categories)
-        }
+    LaunchedEffect(categories) {
+        viewModel.updateSelectedCategories(categories)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

@@ -108,7 +108,22 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         outfits.filter { outfit ->
             val matchesQuery = query.isBlank() || outfit.classes.any { it.contains(query, ignoreCase = true) }
             val matchesCategory = categories.isEmpty() || outfit.classes.any { it in categories }
-            matchesQuery && matchesCategory
+
+            // Determine if there is a topper and an under category
+            val topperCategories = setOf("White Shirt")
+            val underCategories = setOf("Brown Skirt")
+
+            val hasTopper = categories.any { it in topperCategories }
+            val hasUnder = categories.any { it in underCategories }
+
+            if (hasTopper && hasUnder) {
+                val combinedClasses = categories.map { category ->
+                    outfit.classes.any { it.contains(category, ignoreCase = true) }
+                }
+                combinedClasses.all { it } // Check if all selected categories are present in the classes
+            } else {
+                matchesQuery && matchesCategory
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
