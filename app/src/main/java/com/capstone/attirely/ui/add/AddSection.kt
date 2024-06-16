@@ -151,21 +151,15 @@ fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
-                    IconButton(
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_right_down),
+                        contentDescription = "Analyze",
+                        tint = colorResource(id = R.color.primary),
                         modifier = Modifier
                             .height(60.dp)
                             .padding(2.dp)
                             .width(60.dp),
-                        onClick = {
-                            val validOutfits = outfitWidgets.filter { it.first != null && it.second.isNotBlank() }
-                            onAnalyzeClick(validOutfits.map { it.first!! to it.second })
-                        }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_right_down),
-                            contentDescription = "Analyze",
-                            tint = colorResource(id = R.color.primary),
-                        )
-                    }
+                    )
                 }
             }
         }

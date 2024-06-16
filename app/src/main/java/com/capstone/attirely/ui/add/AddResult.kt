@@ -114,19 +114,15 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                 )
-                IconButton(
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right_down),
+                    contentDescription = "Analyze",
+                    tint = colorResource(id = R.color.primary),
                     modifier = Modifier
                         .height(60.dp)
                         .padding(2.dp)
-                        .width(60.dp),
-                    onClick = { }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_right_down),
-                        contentDescription = "Analyze",
-                        tint = colorResource(id = R.color.primary),
-                    )
-                }
+                        .width(60.dp)
+                )
             }
         }
     }
