@@ -76,48 +76,52 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
-        setContent {
-            AttirelyTheme {
-                val context = LocalContext.current
-                val loginResult = loginViewModel.loginResult.observeAsState()
-                val firebaseAuthResult = loginViewModel.firebaseAuthResult.observeAsState()
-                val oneTapSignInState = rememberOneTapSignInState()
+        if (GoogleSignIn.getLastSignedInAccount(this) != null) {
+            navigateToMainScreen()
+        } else {
+            setContent {
+                AttirelyTheme {
+                    val context = LocalContext.current
+                    val loginResult = loginViewModel.loginResult.observeAsState()
+                    val firebaseAuthResult = loginViewModel.firebaseAuthResult.observeAsState()
+                    val oneTapSignInState = rememberOneTapSignInState()
 
-                OneTapSignInWithGoogle(
-                    state = oneTapSignInState,
-                    clientId = getString(R.string.default_web_client_id),
-                    onTokenIdReceived = { tokenId ->
-                        loginViewModel.handleSignInResult(tokenId)
-                    },
-                    onDialogDismissed = { message ->
-                        Log.d("OneTapSignIn", message)
-                        initiateRegularGoogleSignIn()
-                    }
-                )
+                    OneTapSignInWithGoogle(
+                        state = oneTapSignInState,
+                        clientId = getString(R.string.default_web_client_id),
+                        onTokenIdReceived = { tokenId ->
+                            loginViewModel.handleSignInResult(tokenId)
+                        },
+                        onDialogDismissed = { message ->
+                            Log.d("OneTapSignIn", message)
+                            initiateRegularGoogleSignIn()
+                        }
+                    )
 
-                loginResult.value?.let { result ->
-                    result.onSuccess { account ->
-                        Log.d("SignInSuccess", "Email: ${account.email}, DisplayName: ${account.displayName}")
-                    }
-                    result.onFailure { e ->
-                        Log.e("SignInError", "Error: ${e.message}")
-                    }
-                }
-
-                firebaseAuthResult.value?.let { result ->
-                    result.onSuccess { user ->
-                        Log.d("FirebaseAuthSuccess", "User: ${user.email}, DisplayName: ${user.displayName}")
-                        lifecycleScope.launch {
-                            navigateToMainScreen()
+                    loginResult.value?.let { result ->
+                        result.onSuccess { account ->
+                            Log.d("SignInSuccess", "Email: ${account.email}, DisplayName: ${account.displayName}")
+                        }
+                        result.onFailure { e ->
+                            Log.e("SignInError", "Error: ${e.message}")
                         }
                     }
-                    result.onFailure { e ->
-                        Log.e("FirebaseAuthError", "Error: ${e.message}")
-                        initiateRegularGoogleSignIn()
-                    }
-                }
 
-                WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
+                    firebaseAuthResult.value?.let { result ->
+                        result.onSuccess { user ->
+                            Log.d("FirebaseAuthSuccess", "User: ${user.email}, DisplayName: ${user.displayName}")
+                            lifecycleScope.launch {
+                                navigateToMainScreen()
+                            }
+                        }
+                        result.onFailure { e ->
+                            Log.e("FirebaseAuthError", "Error: ${e.message}")
+                            initiateRegularGoogleSignIn()
+                        }
+                    }
+
+                    WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
+                }
             }
         }
     }
