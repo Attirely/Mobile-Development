@@ -4,18 +4,37 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,17 +49,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
-import com.capstone.attirely.data.OutfitData
 import kotlinx.coroutines.delay
 
 @Composable
-fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri?, String>>, onAnalyzeClick: () -> Unit) {
+fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri?, String>>, onAnalyzeClick: (List<Pair<Uri, String>>) -> Unit) {
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -107,12 +124,12 @@ fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri
                 onClick = {
                     showError = false
                     errorMessage = ""
-                    val allWidgetsFilled = outfitWidgets.any { it.first != null && it.second.isNotBlank() }
-                    if (!allWidgetsFilled) {
+                    val validOutfits = outfitWidgets.filter { it.first != null && it.second.isNotBlank() }
+                    if (validOutfits.isEmpty()) {
                         errorMessage = "Please fill at least one image and text."
                         showError = true
                     } else {
-                        onAnalyzeClick()
+                        onAnalyzeClick(validOutfits.map { it.first!! to it.second })
                     }
                 },
                 containerColor = colorResource(id = R.color.white),
@@ -139,7 +156,10 @@ fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri
                             .height(60.dp)
                             .padding(2.dp)
                             .width(60.dp),
-                        onClick = { onAnalyzeClick() }) {
+                        onClick = {
+                            val validOutfits = outfitWidgets.filter { it.first != null && it.second.isNotBlank() }
+                            onAnalyzeClick(validOutfits.map { it.first!! to it.second })
+                        }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_right_down),
                             contentDescription = "Analyze",
@@ -151,6 +171,7 @@ fun AddSection(navController: NavController, outfitWidgets: MutableList<Pair<Uri
         }
     }
 }
+
 @Composable
 fun AddOutfitWidget(
     selectedImageUri: Uri?,

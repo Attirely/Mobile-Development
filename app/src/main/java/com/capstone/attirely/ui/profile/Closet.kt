@@ -50,7 +50,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostCont
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.80f)
+            .fillMaxHeight()
     ) {
         LazyColumn(
             modifier = Modifier
@@ -112,6 +112,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostCont
                 containerColor = colorResource(id = R.color.primary),
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
+                    .padding(bottom = 122.dp)
                     .align(Alignment.BottomCenter)
                     .width(320.dp)
                     .height(66.dp),

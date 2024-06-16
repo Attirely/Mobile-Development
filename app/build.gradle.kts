@@ -82,6 +82,12 @@ dependencies {
     implementation (libs.androidx.datastore.preferences)
     implementation (libs.androidx.datastore.core)
 
+    implementation(libs.tensorflow.lite)
+    implementation(libs.play.services.vision)
+    implementation(libs.firebase.ml.vision)
+    implementation(libs.firebase.ml.vision.barcode.model)
+    implementation(libs.firebase.ml.modeldownloader.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

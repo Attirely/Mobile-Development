@@ -1,23 +1,11 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -74,7 +62,7 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                     outfitData.forEach { data ->
                         val storageRef = FirebaseStorage.getInstance().reference
                         val imageRef = storageRef.child("result_images/${UUID.randomUUID()}.jpg")
-                        val uploadTask = imageRef.putFile(data.imageUri!!.toUri())
+                        val uploadTask = imageRef.putFile(data.imageUri.toUri())
 
                         uploadTask.continueWithTask { task ->
                             if (!task.isSuccessful) {
@@ -87,7 +75,7 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                                 val outfit = hashMapOf(
                                     "imageUrl" to downloadUri.toString(),
                                     "text" to data.text,
-                                    "category" to (viewModel.categoryState.value[data.imageUri.toString()] ?: "")
+                                    "category" to data.category
                                 )
                                 user?.let {
                                     FirebaseFirestore.getInstance()
@@ -101,8 +89,8 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                             }
                         }
                     }
-                    navController.navigate("add") {
-                        popUpTo("add") { inclusive = true }
+                    navController.navigate("profile") {
+                        popUpTo("profile") { inclusive = true }
                     }
                 }
             },
@@ -121,7 +109,7 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Add ${outfitData.size} Outfit",
+                    text = "Add ${outfitData.size} Outfit(s)",
                     color = colorResource(id = R.color.primary),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -162,7 +150,7 @@ fun AddResultComponent(
                 .height(300.dp)
                 .background(color = colorResource(id = R.color.white))
         ) {
-            if (outfitData.imageUri != null) {
+            if (outfitData.imageUri.isNotEmpty()) {
                 Image(
                     painter = rememberAsyncImagePainter(model = outfitData.imageUri),
                     contentDescription = "Selected Image",
@@ -192,10 +180,10 @@ fun AddResultComponent(
             }
             Column {
                 CustomBasicTextField(
-                    text = viewModel.categoryState.value[outfitData.imageUri.toString()] ?: "",
+                    text = outfitData.category,
                     placeholder = stringResource(id = R.string.category),
                     onTextChanged = { newText ->
-                        viewModel.updateCategory(outfitData.imageUri.toString(), newText)
+                        viewModel.updateCategory(outfitData.imageUri, newText)
                     }
                 )
                 Text(
@@ -225,6 +213,7 @@ fun CustomBasicTextField(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         BasicTextField(
+            readOnly = true,
             value = text,
             onValueChange = onTextChanged,
             textStyle = TextStyle(

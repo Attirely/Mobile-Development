@@ -1,12 +1,19 @@
 package com.capstone.attirely
 
 import AddResult
-import ProfileViewModel
-import android.os.Parcelable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -21,14 +28,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.capstone.attirely.data.OutfitData
 import com.capstone.attirely.ui.add.AddScreen
 import com.capstone.attirely.ui.home.HomeScreen
@@ -52,7 +56,7 @@ fun MainScreen() {
             composable("add") { AddScreen(navController) }
             composable("loading_screen") { LoadingScreen() }
             composable("add_result") { backStackEntry ->
-                val outfitData = backStackEntry.arguments?.getParcelableArrayList<OutfitData>("outfitData")
+                val outfitData = backStackEntry.arguments?.getParcelableArrayList<OutfitData>("outfitData")?.toList()
                 AddResult(
                     navController = navController,
                     outfitData = outfitData ?: emptyList()
