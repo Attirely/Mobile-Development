@@ -1,11 +1,17 @@
 import android.app.Application
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.capstone.attirely.MainActivity
 import com.capstone.attirely.data.ClosetItem
 import com.capstone.attirely.data.Content
 import com.capstone.attirely.data.User
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +26,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    val loginResult = MutableLiveData<Result<GoogleSignInAccount>>()
+    val firebaseAuthResult = MutableLiveData<Result<FirebaseUser>>()
 
     private val _favoritesList = MutableStateFlow<List<Pair<String, Content>>>(emptyList())
     val favoritesList: StateFlow<List<Pair<String, Content>>> = _favoritesList
@@ -49,6 +58,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         fetchUserDetails()
         fetchFavorites()
         fetchCloset()
+    }
+
+    fun signOut(context: Context) {
+        firebaseAuth.signOut()
+        val intent = Intent(context, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        context.startActivity(intent)
     }
 
     private fun fetchUserDetails() {

@@ -30,4 +30,5 @@
     <string name="cancel">Cancel</string>
     <string name="fill_all_fields">Please Fill All Fields</string>
     <string name="classifier_failed">Image classifier failed to initialize</string>
+    <string name="signOut">Sign Out</string>
 </resources>

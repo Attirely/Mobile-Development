@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -39,10 +38,9 @@ import com.capstone.attirely.ui.home.HomeScreen
 import com.capstone.attirely.ui.laoding.LoadingScreen
 import com.capstone.attirely.ui.profile.ProfileScreen
 import com.capstone.attirely.ui.search.SearchScreen
-import com.capstone.attirely.ui.theme.AttirelyTheme
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onGoogleSignInClick: () -> Unit) {
     val navController = rememberNavController()
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
@@ -62,10 +60,11 @@ fun MainScreen() {
                     outfitData = outfitData ?: emptyList()
                 )
             }
+            composable("welcome") { WelcomePage(onGoogleSignInClick = onGoogleSignInClick) }
         }
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
-        if (currentRoute != "add" && currentRoute != "loading_screen") {
+        if (currentRoute != "add" && currentRoute != "loading_screen" && currentRoute != "welcome") {
             BottomNavBar(
                 navController = navController,
                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -73,7 +72,6 @@ fun MainScreen() {
         }
     }
 }
-
 @Composable
 fun BottomNavBar(navController: NavHostController, modifier: Modifier = Modifier) {
     val items = listOf(
@@ -141,12 +139,4 @@ sealed class NavItem(val route: String, val icon: ImageVector, val title: String
     object Home : NavItem("home", Icons.Filled.Home, "Home")
     object Search : NavItem("search", Icons.Filled.Search, "Search")
     object Profile : NavItem("profile", Icons.Filled.Person, "Profile")
-}
-
-@Preview
-@Composable
-fun PreviewMainScreen() {
-    AttirelyTheme {
-        MainScreen()
-    }
 }

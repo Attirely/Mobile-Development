@@ -1,7 +1,6 @@
 package com.capstone.attirely
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -12,19 +11,30 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,23 +43,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import com.capstone.attirely.ui.theme.AttirelyTheme
 import com.capstone.attirely.viewmodel.LoginViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import com.google.firebase.FirebaseApp
-import com.stevdzasan.onetap.OneTapSignInWithGoogle
-import com.stevdzasan.onetap.rememberOneTapSignInState
-import kotlinx.coroutines.launch
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
@@ -76,50 +83,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
-        if (GoogleSignIn.getLastSignedInAccount(this) != null) {
-            navigateToMainScreen()
-        } else {
-            setContent {
-                AttirelyTheme {
-                    val context = LocalContext.current
-                    val loginResult = loginViewModel.loginResult.observeAsState()
-                    val firebaseAuthResult = loginViewModel.firebaseAuthResult.observeAsState()
-                    val oneTapSignInState = rememberOneTapSignInState()
 
-                    OneTapSignInWithGoogle(
-                        state = oneTapSignInState,
-                        clientId = getString(R.string.default_web_client_id),
-                        onTokenIdReceived = { tokenId ->
-                            loginViewModel.handleSignInResult(tokenId)
-                        },
-                        onDialogDismissed = { message ->
-                            Log.d("OneTapSignIn", message)
-                            initiateRegularGoogleSignIn()
-                        }
-                    )
+        setContent {
+            AttirelyTheme {
+                val firebaseAuthResult by loginViewModel.firebaseAuthResult.observeAsState()
+                val currentUser = FirebaseAuth.getInstance().currentUser
 
-                    loginResult.value?.let { result ->
-                        result.onSuccess { account ->
-                            Log.d("SignInSuccess", "Email: ${account.email}, DisplayName: ${account.displayName}")
-                        }
-                        result.onFailure { e ->
-                            Log.e("SignInError", "Error: ${e.message}")
-                        }
+                LaunchedEffect(currentUser, firebaseAuthResult) {
+                    if (currentUser != null) {
+                        Log.d("MainActivity", "User is signed in, navigating to main screen")
+                        navigateToMainScreen()
                     }
+                }
 
-                    firebaseAuthResult.value?.let { result ->
-                        result.onSuccess { user ->
-                            Log.d("FirebaseAuthSuccess", "User: ${user.email}, DisplayName: ${user.displayName}")
-                            lifecycleScope.launch {
-                                navigateToMainScreen()
-                            }
-                        }
-                        result.onFailure { e ->
-                            Log.e("FirebaseAuthError", "Error: ${e.message}")
-                            initiateRegularGoogleSignIn()
-                        }
-                    }
-
+                if (currentUser == null) {
+                    Log.d("MainActivity", "User is not signed in, showing welcome page")
                     WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
                 }
             }
@@ -162,9 +140,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun navigateToMainScreen() {
+        Log.d("MainActivity", "Navigating to MainScreen")
         setContent {
             AttirelyTheme {
-                MainScreen()
+                MainScreen(onGoogleSignInClick = { initiateOneTapSignIn() })
             }
         }
     }
@@ -286,7 +265,6 @@ fun WelcomePage(onGoogleSignInClick: () -> Unit) {
         }
     }
 }
-
 @Preview
 @Composable
 fun PreviewWelcomePage() {

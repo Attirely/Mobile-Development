@@ -10,33 +10,56 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.capstone.attirely.R
 import com.capstone.attirely.ui.home.polyFontFamily
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel = viewModel()) {
@@ -57,11 +80,11 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
     LaunchedEffect(selectedTab.value) {
         if (selectedTab.value == "closet") {
             minHeight = 250.dp
-            maxHeight = 380.dp
+            maxHeight = 432.dp
             boxHeight = 250.dp
         } else {
             minHeight = 140.dp
-            maxHeight = 300.dp
+            maxHeight = 352.dp
             boxHeight = 140.dp
         }
     }
@@ -69,6 +92,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
     val user by viewModel.user.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val filteredClosetItems by viewModel.filteredClosetItems.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -147,6 +171,22 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(16.dp))
+                            FloatingActionButton(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .clip(shape = RoundedCornerShape(50.dp))
+                                    .width(140.dp),
+                                containerColor = colorResource(id = R.color.secondary),
+                                onClick = { viewModel.signOut(context) }
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.signOut),
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colorResource(id = R.color.primary),
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
                 }
@@ -222,7 +262,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                                 modifier = Modifier
                                     .width(45.dp)
                                     .fillMaxHeight()
-                                    .background(color= Color.Transparent)
+                                    .background(color = Color.Transparent)
 
                             ) {
                                 Icon(
