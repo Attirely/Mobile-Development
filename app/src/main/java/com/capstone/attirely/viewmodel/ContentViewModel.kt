@@ -7,7 +7,6 @@ import com.capstone.attirely.data.Content
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObject
 
 class ContentViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
