@@ -1,6 +1,7 @@
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.view.WindowManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -62,10 +63,18 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun signOut(context: Context) {
         firebaseAuth.signOut()
-        val intent = Intent(context, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        context.startActivity(intent)
+        val activity = context as? MainActivity
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        activity?.window?.decorView?.animate()?.alpha(0f)?.setDuration(500)?.withEndAction {
+            val intent = Intent(context, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            context.startActivity(intent)
+            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            activity.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            activity.finish()
+        }?.start()
     }
+
 
     private fun fetchUserDetails() {
         val currentUser = auth.currentUser ?: return
