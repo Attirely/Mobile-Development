@@ -43,8 +43,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.capstone.attirely.ui.components.SnackbarHost
 import com.capstone.attirely.ui.theme.AttirelyTheme
 import com.capstone.attirely.viewmodel.LoginViewModel
+import com.capstone.attirely.viewmodel.SnackbarViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -60,13 +62,17 @@ import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
+    private val snackbarViewModel: SnackbarViewModel by viewModels()
+
     private val oneTapSignInLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val credential = result.data?.let { Identity.getSignInClient(this).getSignInCredentialFromIntent(it) }
             credential?.googleIdToken?.let { loginViewModel.handleSignInResult(it) }
+            snackbarViewModel.showSnackbar("Success", "Login successful", Color.Green)
         } else {
             Log.e("OneTapSignIn", "One-tap sign-in failed")
             initiateRegularGoogleSignIn()
+            snackbarViewModel.showSnackbar("Error", "One-tap sign-in failed", Color.Red)
         }
     }
 
@@ -76,6 +82,7 @@ class MainActivity : ComponentActivity() {
             handleSignInResult(task)
         } else {
             Log.e("GoogleSignIn", "Google sign-in failed")
+            snackbarViewModel.showSnackbar("Error", "Google sign-in failed", Color.Red)
         }
     }
 
@@ -86,19 +93,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AttirelyTheme {
-                val firebaseAuthResult by loginViewModel.firebaseAuthResult.observeAsState()
                 val currentUser = FirebaseAuth.getInstance().currentUser
 
-                LaunchedEffect(currentUser, firebaseAuthResult) {
+                LaunchedEffect(currentUser) {
                     if (currentUser != null) {
-                        Log.d("MainActivity", "User is signed in, navigating to main screen")
                         navigateToMainScreen()
                     }
                 }
 
                 if (currentUser == null) {
-                    Log.d("MainActivity", "User is not signed in, showing welcome page")
                     WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
+                }
+
+                val snackbarState by snackbarViewModel.snackbarState.observeAsState()
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SnackbarHost(snackbarState = snackbarState) {
+                        snackbarViewModel.clearSnackbar()
+                    }
                 }
             }
         }
@@ -122,6 +134,7 @@ class MainActivity : ComponentActivity() {
             .addOnFailureListener { e ->
                 Log.e("OneTapSignInError", "Error: ${e.message}")
                 initiateRegularGoogleSignIn()
+                snackbarViewModel.showSnackbar("Error", "One-tap sign-in failed", Color.Red)
             }
     }
 
@@ -134,13 +147,13 @@ class MainActivity : ComponentActivity() {
         try {
             val account = task.getResult(Exception::class.java)
             account?.idToken?.let { loginViewModel.handleSignInResult(it) }
+            snackbarViewModel.showSnackbar("Success", "Login successful", Color.Green)
         } catch (e: Exception) {
-            Log.e("GoogleSignInError", "Error: ${e.message}")
+            snackbarViewModel.showSnackbar("Error", "Google sign-in failed", Color.Red)
         }
     }
 
     private fun navigateToMainScreen() {
-        Log.d("MainActivity", "Navigating to MainScreen")
         setContent {
             AttirelyTheme {
                 MainScreen(onGoogleSignInClick = { initiateOneTapSignIn() })
@@ -265,6 +278,7 @@ fun WelcomePage(onGoogleSignInClick: () -> Unit) {
         }
     }
 }
+
 @Preview
 @Composable
 fun PreviewWelcomePage() {
