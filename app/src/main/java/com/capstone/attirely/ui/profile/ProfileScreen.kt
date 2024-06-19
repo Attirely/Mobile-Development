@@ -1,6 +1,5 @@
 package com.capstone.attirely.ui.profile
 
-import Closet
 import ProfileViewModel
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState

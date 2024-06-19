@@ -1,3 +1,5 @@
+package com.capstone.attirely.datastore
+
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey

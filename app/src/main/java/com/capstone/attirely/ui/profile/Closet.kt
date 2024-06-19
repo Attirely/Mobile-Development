@@ -1,3 +1,6 @@
+package com.capstone.attirely.ui.profile
+
+import ProfileViewModel
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -183,9 +186,9 @@ fun ClosetItemCard(
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val offsetAnimatable = remember { Animatable(0f) }
-    val dragThreshold = 30f // Reduced threshold for showing delete/edit indicator
-    val deleteThreshold = 180f // Threshold for deletion
-    val editThreshold = 180f // Threshold for showing edit indicator
+    val dragThreshold = 30f
+    val deleteThreshold = 180f
+    val editThreshold = 180f
     val trashIndicatorShown = offsetX < -dragThreshold
     val editIndicatorShown = offsetX > dragThreshold
     val coroutineScope = rememberCoroutineScope()

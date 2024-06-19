@@ -1,6 +1,6 @@
 package com.capstone.attirely.viewmodel
 
-import DataStoreManager
+import com.capstone.attirely.datastore.DataStoreManager
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,7 +77,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         val favoritesCollection = db.collection("users").document(user.uid).collection("favorite")
         val docRef = favoritesCollection.document(generateDocumentId(outfit.imageurl))
 
-        if (_favorites.value.contains(outfit.imageurl)) { // Use imageurl as unique identifier
+        if (_favorites.value.contains(outfit.imageurl)) {
             docRef.delete().addOnSuccessListener {
                 _favorites.value = _favorites.value - outfit.imageurl
             }
@@ -112,7 +112,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             val matchesQuery = query.isBlank() || outfit.classes.any { it.contains(query, ignoreCase = true) }
             val matchesCategory = categories.isEmpty() || outfit.classes.any { it in categories }
 
-            // Determine if there is a topper and an under category
             val topperCategories = setOf("White Shirt")
             val underCategories = setOf("Brown Skirt")
 
@@ -123,7 +122,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 val combinedClasses = categories.map { category ->
                     outfit.classes.any { it.contains(category, ignoreCase = true) }
                 }
-                combinedClasses.all { it } // Check if all selected categories are present in the classes
+                combinedClasses.all { it }
             } else {
                 matchesQuery && matchesCategory
             }
@@ -158,7 +157,7 @@ fun Outfit.toContent(): Content {
 
 fun Content.toOutfit(): Outfit {
     return Outfit(
-        filename = this.imageUrl.hashCode().toString(), // Generate a unique filename based on the hash of the imageUrl
+        filename = this.imageUrl.hashCode().toString(),
         imageurl = this.imageUrl,
         classes = this.title.split(", ")
     )
