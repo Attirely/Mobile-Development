@@ -1,6 +1,7 @@
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.WindowManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +11,7 @@ import com.capstone.attirely.MainActivity
 import com.capstone.attirely.data.ClosetItem
 import com.capstone.attirely.data.Content
 import com.capstone.attirely.data.User
+import com.capstone.attirely.datastore.DataStoreManager
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -124,12 +126,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         if (_favorites.value.contains(contentId)) {
             docRef.delete().addOnSuccessListener {
                 _favorites.value = _favorites.value - contentId
-                fetchFavorites() // Refresh the favorites list
+                fetchFavorites()
             }
         } else {
             docRef.set(content).addOnSuccessListener {
                 _favorites.value = _favorites.value + contentId
-                fetchFavorites() // Refresh the favorites list
+                fetchFavorites()
             }
         }
     }
@@ -163,7 +165,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     _selectedClosetItems.value = _selectedClosetItems.value - item
                 }
         }.addOnFailureListener {
-            // Handle failure if needed
+            Log.e("DeleteClosetItem", "Failed to delete item image: ${it.message}")
         }
     }
 
@@ -173,14 +175,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             .document(itemId)
             .update("text", newText)
             .addOnSuccessListener {
-                fetchCloset() // Refresh the closet items
+                fetchCloset()
             }
             .addOnFailureListener {
-                // Handle failure if needed
+                Log.e("UpdateClosetItemText", "Failed to update item text: ${it.message}")
             }
     }
 
-    // Function to set search query and navigate to the search screen
     fun navigateToSearch(navController: NavController) {
         navController.navigate("search") {
             popUpTo(navController.graph.startDestinationId) {

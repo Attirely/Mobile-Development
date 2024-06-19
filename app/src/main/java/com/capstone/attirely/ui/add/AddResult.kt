@@ -1,3 +1,6 @@
+package com.capstone.attirely.ui.add
+
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -85,7 +88,7 @@ fun AddResult(navController: NavController, outfitData: List<OutfitData>) {
                                         .add(outfit)
                                 }
                             } else {
-                                // Handle failures
+                                Log.e("UploadTask", "Failed to upload image: ${task.exception?.message}")
                             }
                         }
                     }

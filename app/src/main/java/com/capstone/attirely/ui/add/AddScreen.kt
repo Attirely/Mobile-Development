@@ -1,7 +1,7 @@
 package com.capstone.attirely.ui.add
 
-import AddResult
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -63,11 +63,15 @@ fun AddScreen(navController: NavController) {
                 }
 
                 override fun onSuccess(resultList: List<ImageClassifierHelper.ClassificationResult>?) {
-                    // This will be handled by the individual callbacks
+                    showLoading = false
+                    showAddResult = true
+                    resultList?.let {
+                        Log.d("ImageClassifier", "Classification successful: $resultList")
+                    }
                 }
 
                 override fun onModelReady() {
-                    // Handle model ready
+                    Log.d("ImageClassifier", "Model is ready")
                 }
             },
             colorModelFileName = "color_model",
