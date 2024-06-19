@@ -330,8 +330,8 @@ class ImageClassifierHelper(
     private fun mapClothClass(index: Int): String {
         return when (index) {
             0 -> "Shirt"
-            1 -> "Trouser"
-            2 -> "Pullover"
+            1 -> "Pants"
+            2 -> "Hoodie"
             3 -> "Dress"
             else -> "Shirt"
         }
