@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,13 +52,10 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.Task
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import android.app.ActionBar
 
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
@@ -68,6 +66,7 @@ class MainActivity : ComponentActivity() {
             credential?.googleIdToken?.let { loginViewModel.handleSignInResult(it) }
         } else {
             Log.e("OneTapSignIn", "One-tap sign-in failed")
+            // You can handle fallback here if necessary
         }
     }
 
@@ -83,45 +82,63 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(currentUser, firebaseAuthResult) {
                     if (currentUser != null) {
-                        navigateToMainScreen()
+                        loginViewModel.updateLoginState(true)
+                    } else {
+                        loginViewModel.updateLoginState(false)
                     }
                 }
 
-                if (currentUser == null) {
-                    WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
+                val isLoggedIn by loginViewModel.isLoggedIn.observeAsState(initial = false)
+
+                Crossfade(targetState = isLoggedIn) { loggedIn ->
+                    if (loggedIn) {
+                        MainScreen(
+                            onGoogleSignInClick = { initiateOneTapSignIn() }
+                        )
+                    } else {
+                        WelcomePage(onGoogleSignInClick = { initiateOneTapSignIn() })
+                    }
                 }
             }
         }
     }
 
     private fun initiateOneTapSignIn() {
-        val signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(getString(R.string.default_web_client_id))
-                    .setFilterByAuthorizedAccounts(false)
-                    .build()
-            )
-            .build()
+        if (checkGooglePlayServices()) {
+            val signInRequest = BeginSignInRequest.builder()
+                .setGoogleIdTokenRequestOptions(
+                    BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                        .setSupported(true)
+                        .setServerClientId(getString(R.string.default_web_client_id))
+                        .setFilterByAuthorizedAccounts(false)
+                        .build()
+                )
+                .build()
 
-        loginViewModel.getOneTapClient().beginSignIn(signInRequest)
-            .addOnSuccessListener { result ->
-                oneTapSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
-            }
-            .addOnFailureListener { e ->
-                Log.e("OneTapSignInError", "Error: ${e.message}")
-            }
+            loginViewModel.getOneTapClient().beginSignIn(signInRequest)
+                .addOnSuccessListener { result ->
+                    oneTapSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
+                }
+                .addOnFailureListener { e ->
+                    Log.e("OneTapSignInError", "Error: ${e.message}")
+                    // Handle the error or provide a fallback
+                }
+        } else {
+            // Handle the case where Google Play Services is not available or up-to-date
+            Log.e("GooglePlayServices", "Google Play Services is not available or up-to-date")
+        }
     }
 
-    private fun navigateToMainScreen() {
-        setContent {
-            AttirelyTheme {
-                MainScreen(
-                    onGoogleSignInClick = { initiateOneTapSignIn() }
-                )
+    private fun checkGooglePlayServices(): Boolean {
+        val googleApiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (googleApiAvailability.isUserResolvableError(resultCode)) {
+                googleApiAvailability.getErrorDialog(this, resultCode, 2404)?.show()
             }
+            return false
         }
+        return true
     }
 }
 

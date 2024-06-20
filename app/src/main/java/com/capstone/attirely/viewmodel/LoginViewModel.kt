@@ -16,6 +16,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     val firebaseAuthResult = MutableLiveData<Result<FirebaseUser>>()
     private val oneTapClient: SignInClient = Identity.getSignInClient(application)
+    val isLoggedIn = MutableLiveData<Boolean>()
 
     fun handleSignInResult(tokenId: String) {
         viewModelScope.launch {
@@ -35,14 +36,21 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     val user = firebaseAuth.currentUser
                     if (user != null) {
                         firebaseAuthResult.postValue(Result.success(user))
+                        isLoggedIn.postValue(true)
                     } else {
                         firebaseAuthResult.postValue(Result.failure(Exception("User is null")))
+                        isLoggedIn.postValue(false)
                     }
                 } else {
                     firebaseAuthResult.postValue(Result.failure(task.exception ?: Exception("Unknown error")))
+                    isLoggedIn.postValue(false)
                 }
             }
     }
 
     fun getOneTapClient(): SignInClient = oneTapClient
+
+    fun updateLoginState(isLoggedIn: Boolean) {
+        this.isLoggedIn.postValue(isLoggedIn)
+    }
 }
