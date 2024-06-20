@@ -68,16 +68,6 @@ class MainActivity : ComponentActivity() {
             credential?.googleIdToken?.let { loginViewModel.handleSignInResult(it) }
         } else {
             Log.e("OneTapSignIn", "One-tap sign-in failed")
-            initiateRegularGoogleSignIn()
-        }
-    }
-
-    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            handleSignInResult(task)
-        } else {
-            Log.e("GoogleSignIn", "Google sign-in failed")
         }
     }
 
@@ -121,28 +111,15 @@ class MainActivity : ComponentActivity() {
             }
             .addOnFailureListener { e ->
                 Log.e("OneTapSignInError", "Error: ${e.message}")
-                initiateRegularGoogleSignIn()
             }
-    }
-
-    private fun initiateRegularGoogleSignIn() {
-        val signInIntent = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signInIntent
-        googleSignInLauncher.launch(signInIntent)
-    }
-
-    private fun handleSignInResult(task: Task<GoogleSignInAccount>) {
-        try {
-            val account = task.getResult(Exception::class.java)
-            account?.idToken?.let { loginViewModel.handleSignInResult(it) }
-        } catch (e: Exception) {
-            Log.e("SignInResult", "Google sign-in failed", e)
-        }
     }
 
     private fun navigateToMainScreen() {
         setContent {
             AttirelyTheme {
-                MainScreen(onGoogleSignInClick = { initiateOneTapSignIn() })
+                MainScreen(
+                    onGoogleSignInClick = { initiateOneTapSignIn() }
+                )
             }
         }
     }
@@ -184,7 +161,8 @@ fun WelcomePage(onGoogleSignInClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxSize(0.8f),
                 painter = painterResource(id = images[page]),
-                contentDescription = "Carousel Image ${page + 1}")
+                contentDescription = "Carousel Image ${page + 1}"
+            )
         }
 
         Text(
