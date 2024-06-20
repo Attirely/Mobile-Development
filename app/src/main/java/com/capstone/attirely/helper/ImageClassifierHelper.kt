@@ -2,7 +2,6 @@ package com.capstone.attirely.helper
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -18,8 +17,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.LinkedList
-import java.util.Queue
 
 class ImageClassifierHelper(
     private val context: Context,
@@ -38,8 +35,6 @@ class ImageClassifierHelper(
     private var typeInputImageChannels = 0
     private var colorModelReady = false
     private var typeModelReady = false
-
-    private val classificationQueue: Queue<Pair<Uri, (ClassificationResult?, ClassificationResult?) -> Unit>> = LinkedList()
 
     init {
         Log.d(TAG, "Initializing ImageClassifierHelper")
@@ -105,36 +100,32 @@ class ImageClassifierHelper(
         if (colorModelReady && typeModelReady) {
             Log.d(TAG, "Both models are ready")
             listener?.onModelReady()
-            processNextClassification()
         }
     }
 
     val isInterpreterReady: Boolean
         get() = colorModelReady && typeModelReady
 
-    fun classifyImage(imageUri: Uri, callback: (ClassificationResult?, ClassificationResult?) -> Unit) {
-        Log.d(TAG, "Adding image to classification queue: $imageUri")
-        classificationQueue.add(Pair(imageUri, callback))
-        processNextClassification()
-    }
-
-    private fun processNextClassification() {
-        if (classificationQueue.isNotEmpty() && isInterpreterReady) {
-            val (imageUri, callback) = classificationQueue.poll()
-            Log.d(TAG, "Processing image: $imageUri")
-
-            val colorByteBuffer = preprocessImageForColor(context, imageUri)
-            val typeByteBuffer = preprocessImageForType(context, imageUri)
-
-            val colorResult = classifyColor(colorByteBuffer)
-            val typeResult = classifyType(typeByteBuffer)
-
-            callback(colorResult, typeResult)
-
-            if (classificationQueue.isNotEmpty()) {
-                processNextClassification()
-            }
+    fun classifyImage(imageUri: Uri, callback: (colorResult: ClassificationResult?, typeResult: ClassificationResult?) -> Unit) {
+        if (!isInterpreterReady) {
+            Log.e(TAG, "Interpreters are not ready")
+            listener?.onFailure(context.getString(R.string.classifier_failed))
+            callback(null, null)
+            return
         }
+
+        val colorByteBuffer = preprocessImageForColor(context, imageUri)
+        val typeByteBuffer = preprocessImageForType(context, imageUri)
+
+        val colorResult = classifyColor(colorByteBuffer)
+        val typeResult = classifyType(typeByteBuffer)
+
+        if (colorResult != null && typeResult != null) {
+            listener?.onSuccess(listOf(colorResult, typeResult))
+        } else {
+            listener?.onFailure(context.getString(R.string.classifier_failed))
+        }
+        callback(colorResult, typeResult)
     }
 
     private fun classifyColor(byteBuffer: ByteBuffer): ClassificationResult? {
@@ -165,7 +156,6 @@ class ImageClassifierHelper(
     private fun classifyType(byteBuffer: ByteBuffer): ClassificationResult? {
         if (typeInterpreter == null) {
             Log.e(TAG, "Type interpreter is not ready")
-            listener?.onFailure(context.getString(R.string.classifier_failed))
             return null
         }
 
@@ -186,6 +176,27 @@ class ImageClassifierHelper(
             null
         }
     }
+    private fun preprocessImageForType(context: Context, imageUri: Uri): ByteBuffer {
+        val bitmap = loadImageBitmap(context, imageUri)
+        val resizedBitmap = resizeBitmap(bitmap, typeInputImageWidth, typeInputImageHeight)
+        return convertBitmapToByteBufferWithScaling(resizedBitmap, typeInputImageWidth, typeInputImageHeight, typeInputImageChannels)
+    }
+    private fun convertBitmapToByteBufferWithScaling(bitmap: Bitmap, width: Int, height: Int, channels: Int): ByteBuffer {
+        val inputImageBuffer = ByteBuffer.allocateDirect(width * height * channels * 4)
+        inputImageBuffer.order(ByteOrder.nativeOrder())
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                val pixel = bitmap.getPixel(j, i)
+                val r = (pixel shr 16 and 0xFF) / 255.0f
+                val g = (pixel shr 8 and 0xFF) / 255.0f
+                val b = (pixel and 0xFF) / 255.0f
+                inputImageBuffer.putFloat(r)
+                inputImageBuffer.putFloat(g)
+                inputImageBuffer.putFloat(b)
+            }
+        }
+        return inputImageBuffer
+    }
 
     private fun logClassificationResults(results: FloatArray, modelType: String, labelMapper: (Int) -> String) {
         Log.d(TAG, "$modelType classification percentages:")
@@ -200,17 +211,6 @@ class ImageClassifierHelper(
         val resizedBitmap = resizeBitmap(bitmap, colorInputImageWidth, colorInputImageHeight)
         return convertBitmapToByteBufferForColor(resizedBitmap).also {
             Log.d(TAG, "Image preprocessed for color model")
-        }
-    }
-
-    private fun preprocessImageForType(context: Context, imageUri: Uri): ByteBuffer {
-        Log.d(TAG, "Preprocessing image for type model")
-        val bitmap = loadImageBitmap(context, imageUri)
-        val resizedBitmap = resizeBitmap(bitmap, typeInputImageWidth, typeInputImageHeight)
-        val grayscaleBitmap = convertToGrayscale(resizedBitmap)
-        val scaledArray = scaleBitmap(grayscaleBitmap)
-        return convertBitmapToByteBufferForType(scaledArray).also {
-            Log.d(TAG, "Image preprocessed for type model")
         }
     }
 
@@ -237,44 +237,6 @@ class ImageClassifierHelper(
         }
     }
 
-    private fun convertToGrayscale(bitmap: Bitmap): Bitmap {
-        Log.d(TAG, "Converting bitmap to grayscale")
-        val width = bitmap.width
-        val height = bitmap.height
-        val grayscaleBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                val pixel = bitmap.getPixel(i, j)
-                val r = Color.red(pixel)
-                val g = Color.green(pixel)
-                val b = Color.blue(pixel)
-                val gray = (0.2989 * r + 0.5870 * g + 0.1140 * b).toInt()
-                val newPixel = Color.rgb(gray, gray, gray)
-                grayscaleBitmap.setPixel(i, j, newPixel)
-            }
-        }
-        Log.d(TAG, "Bitmap converted to grayscale successfully")
-        return grayscaleBitmap
-    }
-
-    private fun scaleBitmap(bitmap: Bitmap): Array<FloatArray> {
-        Log.d(TAG, "Scaling bitmap values to [0, 1]")
-        val width = bitmap.width
-        val height = bitmap.height
-        val scaledArray = Array(height) { FloatArray(width) }
-
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                val pixel = bitmap.getPixel(i, j)
-                val gray = Color.red(pixel) / 255.0f
-                scaledArray[j][i] = gray
-            }
-        }
-        Log.d(TAG, "Bitmap values scaled successfully")
-        return scaledArray
-    }
-
     private fun convertBitmapToByteBufferForColor(bitmap: Bitmap): ByteBuffer {
         Log.d(TAG, "Converting bitmap to ByteBuffer for color model")
         val inputImageBuffer = ByteBuffer.allocateDirect(colorInputImageWidth * colorInputImageHeight * colorInputImageChannels * 4)
@@ -299,20 +261,6 @@ class ImageClassifierHelper(
         return inputImageBuffer
     }
 
-    private fun convertBitmapToByteBufferForType(scaledArray: Array<FloatArray>): ByteBuffer {
-        Log.d(TAG, "Converting scaled array to ByteBuffer for type model")
-        val inputImageBuffer = ByteBuffer.allocateDirect(typeInputImageWidth * typeInputImageHeight * typeInputImageChannels * 4)
-        inputImageBuffer.order(ByteOrder.nativeOrder())
-        for (j in 0 until typeInputImageHeight) {
-            for (i in 0 until typeInputImageWidth) {
-                val gray = scaledArray[j][i]
-                inputImageBuffer.putFloat(gray)
-            }
-        }
-        Log.d(TAG, "Scaled array converted to ByteBuffer for type model successfully")
-        return inputImageBuffer
-    }
-
     private fun mapColorClass(index: Int): String {
         return when (index) {
             0 -> "Black"
@@ -329,11 +277,14 @@ class ImageClassifierHelper(
 
     private fun mapClothClass(index: Int): String {
         return when (index) {
-            0 -> "Shirt"
-            1 -> "Pants"
-            2 -> "Hoodie"
-            3 -> "Dress"
-            else -> "Shirt"
+            0 -> "Dress"
+            1 -> "Hoodie"
+            2 -> "Pants"
+            3 -> "Shirt"
+            4 -> "Shorts"
+            5 -> "Skirt"
+            6 -> "Suit"
+            else -> "Unknown"
         }
     }
 

@@ -151,6 +151,7 @@ fun AddScreen(navController: NavController) {
                                 if (processedOutfits == validOutfits.size) {
                                     results = resultsList
                                     showLoading = true
+                                    showAddResult = true
                                 }
                             }
                         }
