@@ -140,7 +140,7 @@ fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostCont
                 modifier = Modifier
                     .padding(bottom = 122.dp)
                     .align(Alignment.BottomCenter)
-                    .width(320.dp)
+                    .fillMaxWidth(0.85f)
                     .height(66.dp),
             ) {
                 Row(
