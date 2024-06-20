@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.capstone.attirely.ui.theme.AttirelyTheme
 import com.capstone.attirely.viewmodel.LoginViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -57,6 +58,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import android.app.ActionBar
 
 class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModels()
@@ -84,6 +86,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
+        actionBar?.hide()
 
         setContent {
             AttirelyTheme {
