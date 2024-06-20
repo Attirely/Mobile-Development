@@ -112,19 +112,22 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             val matchesQuery = query.isBlank() || outfit.classes.any { it.contains(query, ignoreCase = true) }
             val matchesCategory = categories.isEmpty() || outfit.classes.any { it in categories }
 
-            val topperCategories = setOf("White Shirt")
-            val underCategories = setOf("Brown Skirt")
+            val topperCategories = setOf("Shirt", "Hoodie", "Suit")
+            val underCategories = setOf("Dress", "Pants", "Shorts", "Skirt")
 
-            val hasTopper = categories.any { it in topperCategories }
-            val hasUnder = categories.any { it in underCategories }
+            val colorCategories = setOf("Black", "Blue", "Brown", "Green", "Grey", "Pink", "Red", "White", "Yellow")
 
-            if (hasTopper && hasUnder) {
+            val hasTopper = outfit.classes.any { it in topperCategories }
+            val hasUnder = outfit.classes.any { it in underCategories }
+            val hasColor = outfit.classes.any { it in colorCategories }
+
+            if (categories.isNotEmpty()) {
                 val combinedClasses = categories.map { category ->
                     outfit.classes.any { it.contains(category, ignoreCase = true) }
                 }
                 combinedClasses.all { it }
             } else {
-                matchesQuery && matchesCategory
+                matchesQuery && (matchesCategory || (hasTopper && hasUnder && hasColor))
             }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

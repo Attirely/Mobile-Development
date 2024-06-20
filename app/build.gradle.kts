@@ -83,7 +83,6 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation (libs.androidx.datastore.preferences)
     implementation (libs.androidx.datastore.core)
-    implementation (libs.androidx.core.splashscreen)
 
     implementation(libs.tensorflow.lite)
     implementation(libs.play.services.vision)
