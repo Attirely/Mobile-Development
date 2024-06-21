@@ -177,39 +177,15 @@ class ImageClassifierHelper(
 
     private fun preprocessImageForType(context: Context, imageUri: Uri): ByteBuffer {
         val bitmap = loadImageBitmap(context, imageUri)
-        val resizedBitmap = resizeBitmap(bitmap, typeInputImageWidth, typeInputImageHeight)
-        return convertBitmapToByteBufferWithScaling(resizedBitmap, typeInputImageWidth, typeInputImageHeight, typeInputImageChannels)
-    }
-
-    private fun convertBitmapToByteBufferWithScaling(bitmap: Bitmap, width: Int, height: Int, channels: Int): ByteBuffer {
-        val inputImageBuffer = ByteBuffer.allocateDirect(width * height * channels * 4)
-        inputImageBuffer.order(ByteOrder.nativeOrder())
-        for (i in 0 until height) {
-            for (j in 0 until width) {
-                val pixel = bitmap.getPixel(j, i)
-                val r = (pixel shr 16 and 0xFF) / 255.0f
-                val g = (pixel shr 8 and 0xFF) / 255.0f
-                val b = (pixel and 0xFF) / 255.0f
-                inputImageBuffer.putFloat(r)
-                inputImageBuffer.putFloat(g)
-                inputImageBuffer.putFloat(b)
-            }
-        }
-        return inputImageBuffer
-    }
-
-    private fun logClassificationResults(results: FloatArray, modelType: String, labelMapper: (Int) -> String) {
-        Log.d(TAG, "$modelType classification percentages:")
-        results.forEachIndexed { index, confidence ->
-            Log.d(TAG, "${labelMapper(index)}: ${confidence * 100}%")
-        }
+        val resizedBitmap = resizeBitmap(bitmap, 256, 256)
+        return convertBitmapToByteBufferWithScaling(resizedBitmap, 256, 256, 3)
     }
 
     private fun preprocessImageForColor(context: Context, imageUri: Uri): ByteBuffer {
         Log.d(TAG, "Preprocessing image for color model")
         val bitmap = loadImageBitmap(context, imageUri)
-        val resizedBitmap = resizeBitmap(bitmap, colorInputImageWidth, colorInputImageHeight)
-        return convertBitmapToByteBufferForColor(resizedBitmap).also {
+        val resizedBitmap = resizeBitmap(bitmap, 28, 28)
+        return convertBitmapToByteBufferWithScaling(resizedBitmap, 28, 28, 3).also {
             Log.d(TAG, "Image preprocessed for color model")
         }
     }
@@ -237,12 +213,11 @@ class ImageClassifierHelper(
         }
     }
 
-    private fun convertBitmapToByteBufferForColor(bitmap: Bitmap): ByteBuffer {
-        Log.d(TAG, "Converting bitmap to ByteBuffer for color model")
-        val inputImageBuffer = ByteBuffer.allocateDirect(colorInputImageWidth * colorInputImageHeight * colorInputImageChannels * 4)
+    private fun convertBitmapToByteBufferWithScaling(bitmap: Bitmap, width: Int, height: Int, channels: Int): ByteBuffer {
+        val inputImageBuffer = ByteBuffer.allocateDirect(width * height * channels * 4)
         inputImageBuffer.order(ByteOrder.nativeOrder())
-        for (i in 0 until colorInputImageHeight) {
-            for (j in 0 until colorInputImageWidth) {
+        for (i in 0 until height) {
+            for (j in 0 until width) {
                 val pixel = bitmap.getPixel(j, i)
                 val r = (pixel shr 16 and 0xFF) / 255.0f
                 val g = (pixel shr 8 and 0xFF) / 255.0f
@@ -253,6 +228,13 @@ class ImageClassifierHelper(
             }
         }
         return inputImageBuffer
+    }
+
+    private fun logClassificationResults(results: FloatArray, modelType: String, labelMapper: (Int) -> String) {
+        Log.d(TAG, "$modelType classification percentages:")
+        results.forEachIndexed { index, confidence ->
+            Log.d(TAG, "${labelMapper(index)}: ${confidence * 100}%")
+        }
     }
 
     private fun mapColorClass(index: Int): String {
