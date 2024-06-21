@@ -145,6 +145,9 @@ fun SearchContent(outfits: List<Outfit>) {
                         }
                     }
                 }
+                if (rowOutfits.size < 2) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }

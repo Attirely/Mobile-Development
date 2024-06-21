@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -168,6 +169,9 @@ fun Favorites(viewModel: ProfileViewModel = viewModel()) {
                                     }
                                 }
                             }
+                        }
+                        if (rowContent.size < 2) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }

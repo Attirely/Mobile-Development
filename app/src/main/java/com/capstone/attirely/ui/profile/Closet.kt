@@ -53,6 +53,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -64,7 +65,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun Closet(viewModel: ProfileViewModel = viewModel(), navController: NavHostController) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(navController) {
         viewModel.fetchCloset()
     }
 
@@ -186,24 +187,16 @@ fun ClosetItemCard(
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val offsetAnimatable = remember { Animatable(0f) }
-    val dragThreshold = 30f
+    val coroutineScope = rememberCoroutineScope()
+
+    val dragThreshold = 100f
     val deleteThreshold = 180f
     val editThreshold = 180f
-    val trashIndicatorShown = offsetX < -dragThreshold
-    val editIndicatorShown = offsetX > dragThreshold
-    val coroutineScope = rememberCoroutineScope()
 
     var showEditDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(offsetX) {
-        if (offsetX == 0f) {
-            offsetAnimatable.snapTo(0f)
-        } else {
-            offsetAnimatable.animateTo(
-                targetValue = offsetX,
-                animationSpec = tween(durationMillis = 300)
-            )
-        }
+        offsetAnimatable.snapTo(offsetX)
     }
 
     if (showEditDialog) {
@@ -224,30 +217,36 @@ fun ClosetItemCard(
             .draggable(
                 state = rememberDraggableState { delta ->
                     offsetX += delta
-                    when {
-                        offsetX < -deleteThreshold -> {
-                            onDelete()
-                            offsetX = 0f
-                        }
-                        offsetX > editThreshold -> {
-                            showEditDialog = true
-                            offsetX = 0f
-                        }
+                    coroutineScope.launch {
+                        offsetAnimatable.snapTo(offsetX)
                     }
                 },
                 orientation = Orientation.Horizontal,
-                onDragStarted = { offsetX = 0f },
                 onDragStopped = {
                     coroutineScope.launch {
-                        offsetAnimatable.animateTo(
-                            targetValue = 0f,
-                            animationSpec = tween(durationMillis = 300)
-                        )
-                        offsetX = 0f
+                        when {
+                            offsetX < -deleteThreshold -> {
+                                onDelete()
+                                offsetX = 0f
+                                offsetAnimatable.snapTo(0f)
+                            }
+                            offsetX > editThreshold -> {
+                                showEditDialog = true
+                                offsetX = 0f
+                                offsetAnimatable.snapTo(0f)
+                            }
+                            else -> {
+                                offsetAnimatable.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(durationMillis = 300)
+                                )
+                                offsetX = 0f
+                            }
+                        }
                     }
                 }
             )
-            .offset(x = offsetAnimatable.value.dp)
+            .offset { IntOffset(offsetAnimatable.value.toInt(), 0) }
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
@@ -332,7 +331,7 @@ fun ClosetItemCard(
                     }
                 }
             }
-            if (trashIndicatorShown) {
+            if (offsetX < -dragThreshold) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -350,7 +349,7 @@ fun ClosetItemCard(
                     )
                 }
             }
-            if (editIndicatorShown) {
+            if (offsetX > dragThreshold) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -382,7 +381,7 @@ fun EditTextDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Edit Text") },
+        title = { Text(text = "Edit cloth name") },
         text = {
             TextField(
                 value = text,
