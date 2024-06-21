@@ -8,11 +8,16 @@ Attirelly is a mobile application that uses machine learning to classify clothin
   <h2>Features</h2>
 </div>
 
-- Image classification of clothing items using machine learning.
-- Add multiple images of clothes and analyze them.
-- View classified results and add clothes to your closet.
-- Receive outfit recommendations.
-- User authentication (sign in and sign out).
+- One tap sign-in with Google and sign-out.
+- Receive recommendations as the default home screen.
+- Newest outfit recommendations.
+- Save and remove recommendations from favorites.
+- Utilize machine learning to classify various clothing items.
+- Upload and analyze multiple images of clothes.
+- View classified results and add clothes to your virtual closet.
+- Get outfit recommendations based on your closet.
+- Swipe left to delete a clothing item from your closet.
+- Swipe right on a clothing card to update the item name.
 - Responsive design with Jetpack Compose.
 
 <div align="center">
@@ -35,6 +40,7 @@ Attirelly is a mobile application that uses machine learning to classify clothin
 
 - Android Studio
 - Android SDK
+- Latest version of Google Play Services
 - An active Firebase account
 
 1. **Clone the Repository:**
@@ -47,7 +53,8 @@ Attirelly is a mobile application that uses machine learning to classify clothin
     Open the project in Android Studio.
 
 3. **Sync Project:**
-    Allow Android Studio to sync the project and download all necessary dependencies.
+    - Make sure you have the latest version of Google Play Services installed on your development machine and the target device.
+    - Allow Android Studio to sync the project and download all necessary dependencies.
 
 4. **Firebase Setup:**
     - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
