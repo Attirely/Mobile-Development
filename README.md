@@ -58,7 +58,19 @@ Attirelly is a mobile application that uses machine learning to classify clothin
 
 4. **Firebase Setup:**
     - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
-    - Add your Android app to the Firebase project.
+    - Enable Authentication with Google:
+      - Go to the **Authentication** section.
+      - Click on the **Sign-in method** tab.
+      - Enable **Google** and configure it with your project.
+    - Enable Firebase Firestore:
+      - Go to the **Firestore Database** section.
+      - Click **Create database** and follow the setup instructions.
+    - Enable Firebase Storage:
+      - Go to the **Storage** section.
+      - Click **Get started** and follow the setup instructions.
+    - Add your Android app to the Firebase project:
+      - Click on **Add App** and select **Android**.
+      - Follow the instructions to register your app with Firebase.
     - Download the `google-services.json` file and place it in the `app` directory.
 
 5. **Run the App:**
