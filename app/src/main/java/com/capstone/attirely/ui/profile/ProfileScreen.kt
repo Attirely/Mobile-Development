@@ -1,6 +1,6 @@
 package com.capstone.attirely.ui.profile
 
-import ProfileViewModel
+import com.capstone.attirely.viewmodel.ProfileViewModel
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -303,7 +303,7 @@ fun ProfileScreen(navController: NavHostController, viewModel: ProfileViewModel 
                         Spacer(modifier = Modifier.width(16.dp))
                         IconButton(
                             onClick = {
-                                navController.navigate("add") // Navigate to AddScreen
+                                navController.navigate("add")
                             },
                             modifier = Modifier
                                 .size(48.dp)

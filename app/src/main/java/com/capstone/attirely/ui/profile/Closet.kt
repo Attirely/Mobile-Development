@@ -1,6 +1,6 @@
 package com.capstone.attirely.ui.profile
 
-import ProfileViewModel
+import com.capstone.attirely.viewmodel.ProfileViewModel
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image

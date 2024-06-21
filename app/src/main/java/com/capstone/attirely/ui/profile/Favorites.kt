@@ -1,6 +1,6 @@
 package com.capstone.attirely.ui.profile
 
-import ProfileViewModel
+import com.capstone.attirely.viewmodel.ProfileViewModel
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

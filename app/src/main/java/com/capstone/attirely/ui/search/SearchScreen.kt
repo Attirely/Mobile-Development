@@ -120,7 +120,6 @@ fun SearchScreen(viewModel: SearchViewModel = viewModel()) {
                                                 shape = CircleShape
                                             ),
                                         onClick = {
-                                            // Remove item from datastore
                                             val updatedImageUrls = imageUrls.toMutableList().apply { remove(imageUrl) }
                                             val updatedCategories = categories.toMutableList().apply { remove(category) }
 

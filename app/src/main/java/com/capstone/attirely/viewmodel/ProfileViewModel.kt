@@ -1,3 +1,5 @@
+package com.capstone.attirely.viewmodel
+
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -161,7 +163,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 .document(item.id)
                 .delete()
                 .addOnSuccessListener {
-                    fetchCloset() // Refresh the closet items
+                    fetchCloset()
                     _selectedClosetItems.value = _selectedClosetItems.value - item
                 }
         }.addOnFailureListener {
