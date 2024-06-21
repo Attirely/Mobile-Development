@@ -39,8 +39,8 @@ Attirelly is a mobile application that uses machine learning to classify clothin
 
 1. **Clone the Repository:**
     ```bash
-    git clone https://github.com/your-username/attirelly.git
-    cd attirelly
+    git clone https://github.com/Attirely/Mobile-Development.git
+    cd Mobile-Development
     ```
 
 2. **Open in Android Studio:**
