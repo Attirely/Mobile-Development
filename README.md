@@ -28,12 +28,34 @@ Attirelly is a mobile application that uses machine learning to classify clothin
 ![App Preview](https://drive.google.com/uc?export=view&id=14iXKnYyBmSecUW2eFwM_vqo49ftxDOxf)
 
 <div align="center">
-  <h2>Clone The Repository</h2>
-</div>  
+  <h2>Getting Started</h2>
+</div> 
 
-```bash
-git clone https://github.com/Attirely/Mobile-Development.git
-```
+### Prerequisites
+
+- Android Studio
+- Android SDK
+- An active Firebase account
+
+1. **Clone the Repository:**
+    ```bash
+    git clone https://github.com/your-username/attirelly.git
+    cd attirelly
+    ```
+
+2. **Open in Android Studio:**
+    Open the project in Android Studio.
+
+3. **Sync Project:**
+    Allow Android Studio to sync the project and download all necessary dependencies.
+
+4. **Firebase Setup:**
+    - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
+    - Add your Android app to the Firebase project.
+    - Download the `google-services.json` file and place it in the `app` directory.
+
+5. **Run the App:**
+    Connect your Android device or use an emulator, then run the app from Android Studio.
 
 <div align="center">
   <h2>Dependencies</h2>
