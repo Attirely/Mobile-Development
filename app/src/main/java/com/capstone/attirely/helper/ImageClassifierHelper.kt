@@ -8,15 +8,12 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import com.capstone.attirely.R
-import com.google.firebase.ml.modeldownloader.CustomModel
-import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
-import com.google.firebase.ml.modeldownloader.DownloadType
-import com.google.firebase.ml.modeldownloader.FirebaseModelDownloader
 import org.tensorflow.lite.Interpreter
-import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 
 class ImageClassifierHelper(
     private val context: Context,
@@ -38,43 +35,44 @@ class ImageClassifierHelper(
 
     init {
         Log.d(TAG, "Initializing ImageClassifierHelper")
-        downloadAndSetupModel(colorModelFileName) { interpreter ->
+        setupInterpreter(colorModelFileName) { interpreter ->
             colorInterpreter = interpreter
             colorModelReady = true
             checkIfBothModelsReady()
         }
-        downloadAndSetupModel(typeModelFileName) { interpreter ->
+        setupInterpreter(typeModelFileName) { interpreter ->
             typeInterpreter = interpreter
             typeModelReady = true
             checkIfBothModelsReady()
         }
     }
 
-    private fun downloadAndSetupModel(modelFileName: String, setupInterpreter: (Interpreter) -> Unit) {
-        Log.d(TAG, "Downloading model: $modelFileName")
-        val conditions = CustomModelDownloadConditions.Builder()
-            .requireWifi()
-            .build()
-
-        FirebaseModelDownloader.getInstance()
-            .getModel(modelFileName, DownloadType.LOCAL_MODEL_UPDATE_IN_BACKGROUND, conditions)
-            .addOnSuccessListener { model: CustomModel? ->
-                val modelFile: File? = model?.file
-                if (modelFile != null) {
-                    Log.d(TAG, "Model $modelFileName downloaded successfully")
-                    setupInterpreter(createInterpreter(modelFile, modelFileName == colorModelFileName))
-                } else {
-                    Log.e(TAG, "Failed to download model $modelFileName")
-                    listener?.onFailure(context.getString(R.string.classifier_failed))
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.e(TAG, "Model $modelFileName download failed", exception)
-                listener?.onFailure(context.getString(R.string.classifier_failed))
-            }
+    private fun setupInterpreter(modelFileName: String, setupInterpreter: (Interpreter) -> Unit) {
+        Log.d(TAG, "Setting up model: $modelFileName")
+        val modelFile = loadModelFile(context, modelFileName)
+        if (modelFile != null) {
+            setupInterpreter(createInterpreter(modelFile, modelFileName == colorModelFileName))
+        } else {
+            Log.e(TAG, "Failed to load model $modelFileName")
+            listener?.onFailure(context.getString(R.string.classifier_failed))
+        }
     }
 
-    private fun createInterpreter(modelFile: File, isColorModel: Boolean): Interpreter {
+    private fun loadModelFile(context: Context, modelFileName: String): ByteBuffer? {
+        return try {
+            val assetFileDescriptor = context.assets.openFd(modelFileName)
+            val fileInputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
+            val fileChannel = fileInputStream.channel
+            val startOffset = assetFileDescriptor.startOffset
+            val declaredLength = assetFileDescriptor.declaredLength
+            fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+        } catch (e: IOException) {
+            Log.e(TAG, "Error loading model file $modelFileName", e)
+            null
+        }
+    }
+
+    private fun createInterpreter(modelFile: ByteBuffer, isColorModel: Boolean): Interpreter {
         Log.d(TAG, "Creating interpreter for ${if (isColorModel) "color" else "type"} model")
         val options = Interpreter.Options().apply {
             setNumThreads(numThreads)
@@ -176,11 +174,13 @@ class ImageClassifierHelper(
             null
         }
     }
+
     private fun preprocessImageForType(context: Context, imageUri: Uri): ByteBuffer {
         val bitmap = loadImageBitmap(context, imageUri)
         val resizedBitmap = resizeBitmap(bitmap, typeInputImageWidth, typeInputImageHeight)
         return convertBitmapToByteBufferWithScaling(resizedBitmap, typeInputImageWidth, typeInputImageHeight, typeInputImageChannels)
     }
+
     private fun convertBitmapToByteBufferWithScaling(bitmap: Bitmap, width: Int, height: Int, channels: Int): ByteBuffer {
         val inputImageBuffer = ByteBuffer.allocateDirect(width * height * channels * 4)
         inputImageBuffer.order(ByteOrder.nativeOrder())
@@ -243,21 +243,15 @@ class ImageClassifierHelper(
         inputImageBuffer.order(ByteOrder.nativeOrder())
         for (i in 0 until colorInputImageHeight) {
             for (j in 0 until colorInputImageWidth) {
-                val pixel = bitmap.getPixel(i, j)
-                if (colorInputImageChannels == 1) {
-                    val gray = (pixel and 0xFF) / 255.0f
-                    inputImageBuffer.putFloat(gray)
-                } else {
-                    val r = (pixel shr 16 and 0xFF) / 255.0f
-                    val g = (pixel shr 8 and 0xFF) / 255.0f
-                    val b = (pixel and 0xFF) / 255.0f
-                    inputImageBuffer.putFloat(r)
-                    inputImageBuffer.putFloat(g)
-                    inputImageBuffer.putFloat(b)
-                }
+                val pixel = bitmap.getPixel(j, i)
+                val r = (pixel shr 16 and 0xFF) / 255.0f
+                val g = (pixel shr 8 and 0xFF) / 255.0f
+                val b = (pixel and 0xFF) / 255.0f
+                inputImageBuffer.putFloat(r)
+                inputImageBuffer.putFloat(g)
+                inputImageBuffer.putFloat(b)
             }
         }
-        Log.d(TAG, "Bitmap converted to ByteBuffer for color model successfully")
         return inputImageBuffer
     }
 
@@ -301,5 +295,6 @@ class ImageClassifierHelper(
 
     companion object {
         private const val TAG = "ImageClassifierHelper"
+        private const val numThreads = 4
     }
 }

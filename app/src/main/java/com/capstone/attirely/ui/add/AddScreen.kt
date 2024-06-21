@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +44,7 @@ import com.capstone.attirely.helper.ImageClassifierHelper
 import com.capstone.attirely.ui.home.polyFontFamily
 import com.capstone.attirely.ui.laoding.LoadingScreen
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddScreen(navController: NavController) {
@@ -52,6 +54,7 @@ fun AddScreen(navController: NavController) {
     var results by remember { mutableStateOf<List<OutfitData>?>(null) }
 
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     val imageClassifierHelper = remember {
         ImageClassifierHelper(
@@ -60,6 +63,7 @@ fun AddScreen(navController: NavController) {
                 override fun onFailure(error: String) {
                     showLoading = false
                     showAddResult = false
+                    Log.e("ImageClassifier", "Classification failed: $error")
                 }
 
                 override fun onSuccess(resultList: List<ImageClassifierHelper.ClassificationResult>?) {
@@ -74,8 +78,8 @@ fun AddScreen(navController: NavController) {
                     Log.d("ImageClassifier", "Model is ready")
                 }
             },
-            colorModelFileName = "color_model",
-            typeModelFileName = "type_model"
+            colorModelFileName = "color.tflite",
+            typeModelFileName = "type.tflite"
         )
     }
 
@@ -137,21 +141,24 @@ fun AddScreen(navController: NavController) {
                 else -> {
                     AddSection(navController = navController, outfitWidgets = outfitWidgets) { validOutfits ->
                         showLoading = true
-                        val resultsList = mutableListOf<OutfitData>()
-                        var processedOutfits = 0
-                        validOutfits.forEach { outfit ->
-                            imageClassifierHelper.classifyImage(outfit.first) { colorResult, typeResult ->
-                                val outfitData = OutfitData(
-                                    category = "${colorResult?.label} ${typeResult?.label}",
-                                    imageUri = outfit.first.toString(),
-                                    text = outfit.second
-                                )
-                                resultsList.add(outfitData)
-                                processedOutfits++
-                                if (processedOutfits == validOutfits.size) {
-                                    results = resultsList
-                                    showLoading = true
-                                    showAddResult = true
+                        coroutineScope.launch {
+                            delay(1500)
+                            val resultsList = mutableListOf<OutfitData>()
+                            var processedOutfits = 0
+                            validOutfits.forEach { outfit ->
+                                imageClassifierHelper.classifyImage(outfit.first) { colorResult, typeResult ->
+                                    val outfitData = OutfitData(
+                                        category = "${colorResult?.label} ${typeResult?.label}",
+                                        imageUri = outfit.first.toString(),
+                                        text = outfit.second
+                                    )
+                                    resultsList.add(outfitData)
+                                    processedOutfits++
+                                    if (processedOutfits == validOutfits.size) {
+                                        results = resultsList
+                                        showLoading = false
+                                        showAddResult = true
+                                    }
                                 }
                             }
                         }

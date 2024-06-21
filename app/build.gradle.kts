@@ -79,18 +79,10 @@ dependencies {
     implementation (libs.androidx.foundation.v120)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
-    implementation (libs.coil.compose.v132)
     implementation(libs.firebase.storage.ktx)
     implementation (libs.androidx.datastore.preferences)
     implementation (libs.androidx.datastore.core)
-    implementation (libs.androidx.work.runtime.ktx.v271)
-
-
     implementation(libs.tensorflow.lite)
-    implementation(libs.play.services.vision)
-    implementation(libs.firebase.ml.vision)
-    implementation(libs.firebase.ml.vision.barcode.model)
-    implementation(libs.firebase.ml.modeldownloader.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

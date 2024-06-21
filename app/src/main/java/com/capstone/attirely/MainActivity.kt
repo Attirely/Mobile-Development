@@ -44,10 +44,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.capstone.attirely.helper.ModelDownloadWorker
 import com.capstone.attirely.ui.theme.AttirelyTheme
 import com.capstone.attirely.viewmodel.LoginViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -70,7 +66,6 @@ class MainActivity : ComponentActivity() {
             credential?.googleIdToken?.let { loginViewModel.handleSignInResult(it) }
         } else {
             Log.e("OneTapSignIn", "One-tap sign-in failed")
-            // You can handle fallback here if necessary
         }
     }
 
@@ -78,14 +73,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         enableEdgeToEdge()
-
-        // Schedule the model download worker
-        val downloadWorkRequest = OneTimeWorkRequestBuilder<ModelDownloadWorker>().build()
-        WorkManager.getInstance(this).enqueueUniqueWork(
-            "ModelDownloadWork",
-            ExistingWorkPolicy.KEEP,
-            downloadWorkRequest
-        )
 
         setContent {
             AttirelyTheme {
@@ -131,10 +118,8 @@ class MainActivity : ComponentActivity() {
                 }
                 .addOnFailureListener { e ->
                     Log.e("OneTapSignInError", "Error: ${e.message}")
-                    // Handle the error or provide a fallback
                 }
         } else {
-            // Handle the case where Google Play Services is not available or up-to-date
             Log.e("GooglePlayServices", "Google Play Services is not available or up-to-date")
         }
     }
